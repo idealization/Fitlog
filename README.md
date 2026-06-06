@@ -10,11 +10,12 @@ This repository currently contains:
 - AI-DLC elaboration outputs in `requirements/ai_dlc`
 - A P0 construction unit: the recommendation domain core under `services/api`
 - U2 API foundation: FastAPI app shell, health route, recommendation routes, and API schemas
+- U3 Closet CRUD: in-memory closet item repository and CRUD API
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U2 API foundation complete; U3 Closet CRUD is next
+- Construction / Execute: U3 Closet CRUD complete; U4 image analysis job contract is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -42,9 +43,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is Closet item CRUD API:
+The next recommended construction unit after U3 is image analysis job contract:
 
-- persistence models
-- closet item repository
-- closet item list/detail/create/update/delete routes
-- recommendation endpoint backed by persisted closet items
+- upload URL contract
+- analysis job state model
+- worker-facing event contract
+- placeholder route tests

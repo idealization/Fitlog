@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U2 API project foundation complete; next unit is U3 Closet item CRUD API
+- Construction / Execute: U3 Closet item CRUD API complete; next unit is U4 Image analysis job contract
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -31,7 +31,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 flowchart TD
     U0["U0: AI-DLC requirements elaboration"] --> U1["U1: Recommendation domain core"]
     U1 --> U2["U2: API project foundation (complete)"]
-    U2 --> U3["U3: Closet item CRUD API"]
+    U2 --> U3["U3: Closet item CRUD API (complete)"]
     U2 --> U4["U4: Image analysis job contract"]
     U3 --> U5["U5: Outfit recommendation API"]
     U5 --> U6["U6: Morning notification scheduler"]

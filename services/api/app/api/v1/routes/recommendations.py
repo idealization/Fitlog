@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from ....domain import generate_outfit_recommendations
 from ....repositories.demo_data import demo_closet_items, demo_trend_signals, demo_weather
@@ -19,10 +19,12 @@ def demo_recommendations() -> RecommendationResponse:
 
 
 @router.post("", response_model=RecommendationResponse)
-def create_recommendation(payload: RecommendationRequest) -> RecommendationResponse:
+def create_recommendation(payload: RecommendationRequest, request: Request) -> RecommendationResponse:
     items = [item.to_domain() for item in payload.items]
     if payload.use_demo_closet:
         items.extend(demo_closet_items())
+    if not items:
+        items.extend(request.app.state.closet_repository.list())
 
     if not items:
         raise HTTPException(status_code=400, detail="At least one closet item is required.")
@@ -36,4 +38,3 @@ def create_recommendation(payload: RecommendationRequest) -> RecommendationRespo
     )
 
     return RecommendationResponse(candidates=[to_candidate_response(candidate) for candidate in candidates])
-
