@@ -1,0 +1,195 @@
+# 05. Data and API Contracts
+
+## 1. 주요 엔티티
+
+```mermaid
+erDiagram
+    USER ||--o{ CLOSET_ITEM : owns
+    USER ||--o{ STYLE_PREFERENCE : has
+    USER ||--o{ OUTFIT : receives
+    USER ||--o{ WEAR_LOG : records
+    CLOSET_ITEM ||--o{ CLOSET_ITEM_IMAGE : has
+    CLOSET_ITEM ||--o{ OUTFIT_ITEM : used_in
+    OUTFIT ||--o{ OUTFIT_ITEM : contains
+    OUTFIT ||--o{ OUTFIT_FEEDBACK : gets
+    OUTFIT ||--|| WEATHER_SNAPSHOT : based_on
+    TREND_SIGNAL }o--o{ OUTFIT : influences
+```
+
+## 2. User
+
+| Field | Type | Note |
+| --- | --- | --- |
+| id | uuid | primary key |
+| email | string | nullable for social-only account |
+| provider | enum | email, apple, google, kakao 등 |
+| nickname | string | display name |
+| locale | string | ko-KR 등 |
+| timezone | string | Asia/Seoul 등 |
+| defaultLocation | json | lat/lng 또는 행정구역 |
+| morningNotificationTime | string | HH:mm |
+| weekdayNotificationTime | string | optional |
+| weekendNotificationTime | string | optional |
+| notificationEnabled | boolean | push opt-in |
+| imageRetentionMode | enum | keep_original, delete_after_illustration |
+| createdAt | datetime |  |
+| updatedAt | datetime |  |
+
+## 3. ClosetItem
+
+| Field | Type | Note |
+| --- | --- | --- |
+| id | uuid | primary key |
+| userId | uuid | owner |
+| category | enum | top, bottom, outerwear, dress, shoes, bag, accessory |
+| subType | string | shirt, knit, denim 등 |
+| primaryColor | string | normalized color |
+| primaryColorHex | string | optional |
+| secondaryColors | json | optional |
+| pattern | enum | solid, stripe, check, floral, graphic 등 |
+| materialGuess | json | list |
+| thickness | enum | light, medium, heavy |
+| seasons | json | spring, summer, fall, winter |
+| fit | enum | slim, regular, oversized, wide |
+| formality | enum | casual, business_casual, formal |
+| styleTags | json | minimal, street, classic 등 |
+| status | enum | available, laundry, repair, storage, sell_or_donate |
+| brand | string | optional |
+| size | string | optional |
+| memo | text | optional |
+| wearCount | int | default 0 |
+| lastWornAt | date | optional |
+| analysisConfidence | json | AI confidence |
+| createdAt | datetime |  |
+| updatedAt | datetime |  |
+
+## 4. ClosetItemImage
+
+| Field | Type | Note |
+| --- | --- | --- |
+| id | uuid | primary key |
+| closetItemId | uuid | parent |
+| imageType | enum | original, cropped, illustration |
+| storageKey | string | object storage key |
+| width | int | optional |
+| height | int | optional |
+| createdAt | datetime |  |
+
+## 5. Outfit
+
+| Field | Type | Note |
+| --- | --- | --- |
+| id | uuid | primary key |
+| userId | uuid | owner |
+| requestText | text | nullable for scheduled recommendation |
+| occasion | string | work, date, casual 등 |
+| moodTags | json | parsed mood |
+| trendLevel | enum | basic, balanced, experimental |
+| recommendationType | enum | manual, morning |
+| weatherSnapshotId | uuid | optional |
+| score | float | ranking score |
+| reason | text | user-facing explanation |
+| status | enum | candidate, saved, worn, dismissed |
+| createdAt | datetime |  |
+
+## 6. WeatherSnapshot
+
+| Field | Type | Note |
+| --- | --- | --- |
+| id | uuid | primary key |
+| userId | uuid | owner |
+| location | json | lat/lng or city |
+| temperature | float | Celsius |
+| feelsLike | float | Celsius |
+| precipitationProbability | float | 0-1 |
+| precipitationType | enum | none, rain, snow |
+| humidity | float | 0-1 |
+| windSpeed | float | m/s |
+| uvIndex | float | optional |
+| airQuality | string | optional |
+| capturedAt | datetime |  |
+| provider | string | weather API provider |
+
+## 7. API 초안
+
+### Auth and User
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | /auth/sign-up | 회원가입 |
+| POST | /auth/sign-in | 로그인 |
+| POST | /auth/social | 소셜 로그인 |
+| GET | /me | 내 프로필 조회 |
+| PATCH | /me | 내 프로필 수정 |
+| PATCH | /me/preferences | 취향 설정 수정 |
+| PATCH | /me/notification-settings | 알림 설정 수정 |
+
+### Closet
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | /closet-items/uploads | 이미지 업로드 URL 발급 |
+| POST | /closet-items/analyze | 의류 분석 작업 생성 |
+| GET | /closet-items/jobs/{jobId} | 분석 작업 상태 조회 |
+| POST | /closet-items | 의류 저장 |
+| GET | /closet-items | 의류 목록 |
+| GET | /closet-items/{itemId} | 의류 상세 |
+| PATCH | /closet-items/{itemId} | 의류 수정 |
+| DELETE | /closet-items/{itemId} | 의류 삭제 |
+
+### Recommendation
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| POST | /recommendations | 자연어 추천 요청 |
+| GET | /recommendations/{recommendationId} | 추천 결과 조회 |
+| POST | /recommendations/{recommendationId}/feedback | 피드백 저장 |
+| POST | /recommendations/{recommendationId}/save | 추천 저장 |
+| POST | /recommendations/{recommendationId}/wear | 오늘 입음 기록 |
+| POST | /recommendations/regenerate | 고정/제외 조건 기반 재추천 |
+
+### Weather and Trends
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | /weather/current | 현재 날씨 조회 |
+| GET | /trends | 현재 트렌드 시그널 조회 |
+
+## 8. 작업 상태 계약
+
+비동기 작업은 공통 상태 모델을 사용한다.
+
+```json
+{
+  "jobId": "uuid",
+  "type": "closet_item_analysis",
+  "status": "queued",
+  "progress": 0,
+  "result": null,
+  "error": null,
+  "createdAt": "2026-06-06T00:00:00Z",
+  "updatedAt": "2026-06-06T00:00:00Z"
+}
+```
+
+### Status
+
+- queued
+- running
+- needs_user_review
+- succeeded
+- failed
+- canceled
+
+## 9. 이벤트 초안
+
+| Event | Producer | Consumer |
+| --- | --- | --- |
+| image.uploaded | API | AI Worker |
+| closet_item.analyzed | AI Worker | API, App |
+| closet_item.illustrated | AI Worker | API, App |
+| recommendation.requested | API | Recommendation Worker |
+| morning_recommendation.due | Scheduler | Recommendation Worker |
+| outfit.feedback_created | API | Analytics/Recommendation |
+| user.data_deletion_requested | API | Storage/DB cleanup |
+
