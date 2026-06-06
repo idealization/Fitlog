@@ -8,14 +8,29 @@ This repository currently contains:
 
 - Product requirements in `requirements/service_requirements.md`
 - AI-DLC elaboration outputs in `requirements/ai_dlc`
-- A first P0 construction unit: the recommendation domain core under `services/api`
+- A P0 construction unit: the recommendation domain core under `services/api`
+- U2 API foundation: FastAPI app shell, health route, recommendation routes, and API schemas
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: started
-- Delivery / Check: unit tests added for recommendation core
+- Construction / Execute: U2 API foundation complete; U3 Closet CRUD is next
+- Delivery / Check: unit and API tests added
 - Operations: not started
+
+## Backend Setup
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r services/api/requirements-dev.txt
+```
+
+Run the API locally:
+
+```bash
+uvicorn app.main:app --app-dir services/api --reload
+```
 
 ## Local Verification
 
@@ -27,10 +42,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is the API project foundation:
+The next recommended construction unit is Closet item CRUD API:
 
-- FastAPI app shell
 - persistence models
-- closet item CRUD contract
-- recommendation endpoint that calls the domain core
-
+- closet item repository
+- closet item list/detail/create/update/delete routes
+- recommendation endpoint backed by persisted closet items

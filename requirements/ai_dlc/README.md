@@ -22,20 +22,20 @@
 - `06_delivery_backlog.md`: MVP 백로그, 우선순위, 스프린트 계획
 - `07_quality_risk_checklist.md`: 테스트, 보안, 개인정보, 운영 리스크 체크리스트
 
-## 현재 권장 방향
+## 현재 결정 사항
 
+- 서비스명: Fitlog
 - 앱: iOS/Android 우선의 크로스 플랫폼 모바일 앱
 - 초기 구현 방식: React Native Expo + TypeScript
 - 백엔드: FastAPI + PostgreSQL + S3 호환 이미지 저장소
 - 비동기 처리: Redis Queue 또는 Celery 계열 워커
 - AI: MVP에서는 외부 AI API를 활용하고, 사용자 피드백/성능 데이터를 쌓은 뒤 자체 모델 여부를 재검토
 - 추천: 규칙 기반 필터와 AI 랭킹을 혼합
-- 현재 실행 단위: P0 추천 도메인 코어 구현
+- 현재 실행 단위: U3 Closet item CRUD API
 
 ## 다음 작업
 
 1. 서비스명, 브랜드 톤, 일러스트 스타일을 결정한다.
 2. 모바일 앱 기술 스택을 확정한다.
-3. MVP 백로그 중 P0 항목을 기준으로 앱/서버 프로젝트를 생성한다.
+3. U3 Closet item CRUD API를 구현한다.
 4. 이미지 처리와 추천 파이프라인은 실제 모델/API 후보를 선정한 뒤 프로토타입으로 검증한다.
-

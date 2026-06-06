@@ -2,7 +2,7 @@
 
 ## Intent
 
-Build an AI wardrobe app that lets users digitize their own clothes from photos, turn each item into a consistent illustration, and receive outfit recommendations based on weather, style intent, trends, and wardrobe history.
+Build Fitlog, an AI wardrobe app that lets users digitize their own clothes from photos, turn each item into a consistent illustration, and receive outfit recommendations based on weather, style intent, trends, and wardrobe history.
 
 ## Source Context
 
@@ -21,8 +21,8 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: started with the P0 recommendation domain core
-- Delivery / Check: active through unit tests and quality checklist
+- Construction / Execute: U2 API project foundation complete; next unit is U3 Closet item CRUD API
+- Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
 ## Units of Work
@@ -30,7 +30,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ```mermaid
 flowchart TD
     U0["U0: AI-DLC requirements elaboration"] --> U1["U1: Recommendation domain core"]
-    U1 --> U2["U2: API project foundation"]
+    U1 --> U2["U2: API project foundation (complete)"]
     U2 --> U3["U3: Closet item CRUD API"]
     U2 --> U4["U4: Image analysis job contract"]
     U3 --> U5["U5: Outfit recommendation API"]
@@ -50,10 +50,10 @@ flowchart TD
 
 ## Critical Human Decisions Still Open
 
-- Final app stack
+- Final app stack: React Native Expo + FastAPI selected for MVP
 - Authentication provider
 - Image generation provider
 - Weather API provider
-- Brand name and visual direction
+- Brand name: Fitlog selected
+- Visual direction
 - MVP launch region
-
