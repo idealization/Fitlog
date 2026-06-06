@@ -50,3 +50,11 @@ class TrendLevel(str, Enum):
     BALANCED = "balanced"
     EXPERIMENTAL = "experimental"
 
+
+class ImageAnalysisJobStatus(str, Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    NEEDS_USER_REVIEW = "needs_user_review"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    CANCELED = "canceled"

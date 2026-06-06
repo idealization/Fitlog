@@ -8,6 +8,7 @@ The current implementation contains:
 - FastAPI app foundation
 - health endpoint
 - closet item CRUD endpoints
+- upload ticket and image analysis job endpoints
 - recommendation endpoints that call the domain core
 - demo data used until persistence is implemented
 
@@ -42,6 +43,7 @@ python -m unittest discover services/api/tests
 - Weather, style, trend, fixed item, and exclusion scoring
 - FastAPI app shell
 - Closet item CRUD routes with in-memory repository
+- Image analysis upload/job routes with in-memory repository
 - Recommendation route fallback to stored closet items
 - Recommendation request/response schemas
 

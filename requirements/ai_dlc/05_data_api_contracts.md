@@ -172,6 +172,50 @@ erDiagram
 }
 ```
 
+### Image Upload Ticket
+
+```json
+{
+  "uploadId": "uuid-or-token",
+  "uploadUrl": "memory://fitlog/uploads/{uploadId}/white-shirt.jpg",
+  "method": "PUT",
+  "storageKey": "uploads/{uploadId}/white-shirt.jpg",
+  "expiresAt": "2026-06-06T00:15:00Z",
+  "headers": {
+    "Content-Type": "image/jpeg"
+  }
+}
+```
+
+### Image Analysis Job Creation
+
+```json
+{
+  "uploadId": "uuid-or-token",
+  "requestedOperations": [
+    "quality_check",
+    "attribute_extraction",
+    "illustration"
+  ]
+}
+```
+
+### Worker Event
+
+```json
+{
+  "eventType": "image.uploaded",
+  "jobId": "uuid",
+  "uploadId": "uuid-or-token",
+  "storageKey": "uploads/{uploadId}/white-shirt.jpg",
+  "requestedOperations": [
+    "quality_check",
+    "attribute_extraction",
+    "illustration"
+  ]
+}
+```
+
 ### Status
 
 - queued
@@ -192,4 +236,3 @@ erDiagram
 | morning_recommendation.due | Scheduler | Recommendation Worker |
 | outfit.feedback_created | API | Analytics/Recommendation |
 | user.data_deletion_requested | API | Storage/DB cleanup |
-

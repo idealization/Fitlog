@@ -62,7 +62,7 @@
 
 ## U4. Image Analysis Job Contract
 
-- Status: next
+- Status: complete
 - Scope:
   - upload URL request/response schema
   - image analysis job state model
@@ -70,3 +70,21 @@
   - job status route
   - placeholder in-memory job repository
   - worker-facing event payload shape
+- Output:
+  - `services/api/app/domain/image_analysis.py`
+  - `services/api/app/repositories/image_analysis_jobs.py`
+  - `services/api/app/api/v1/schemas/image_analysis.py`
+  - `services/api/tests/test_image_analysis_jobs_api.py`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+
+## U5. Persistence Foundation
+
+- Status: next
+- Scope:
+  - choose SQLAlchemy or SQLModel
+  - database settings
+  - session lifecycle
+  - migration setup
+  - persisted closet item repository
+  - persisted image analysis job repository
