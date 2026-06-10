@@ -11,6 +11,7 @@ The current implementation contains:
 - upload ticket and image analysis job endpoints
 - recommendation endpoints that call the domain core
 - demo data used until persistence is implemented
+- SQLite-backed persistence option
 
 ## Setup
 
@@ -26,6 +27,12 @@ From the repository root:
 
 ```bash
 uvicorn app.main:app --app-dir services/api --reload
+```
+
+To persist data locally:
+
+```bash
+FITLOG_REPOSITORY_BACKEND=sqlite FITLOG_DATABASE_URL=sqlite:///./fitlog.db uvicorn app.main:app --app-dir services/api --reload
 ```
 
 ## Test
@@ -44,6 +51,8 @@ python -m unittest discover services/api/tests
 - FastAPI app shell
 - Closet item CRUD routes with in-memory repository
 - Image analysis upload/job routes with in-memory repository
+- SQLAlchemy models and SQLite-backed repositories
+- Alembic initial migration
 - Recommendation route fallback to stored closet items
 - Recommendation request/response schemas
 

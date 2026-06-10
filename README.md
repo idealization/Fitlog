@@ -12,11 +12,12 @@ This repository currently contains:
 - U2 API foundation: FastAPI app shell, health route, recommendation routes, and API schemas
 - U3 Closet CRUD: in-memory closet item repository and CRUD API
 - U4 Image analysis job contract: upload ticket, analysis job creation, job status, and worker event payload
+- U5 Persistence foundation: SQLAlchemy models, SQLite repository backend, and Alembic initial migration
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U4 image analysis job contract complete; U5 persistence foundation is next
+- Construction / Execute: U5 persistence foundation complete; U6 persisted recommendation API is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -34,6 +35,12 @@ Run the API locally:
 uvicorn app.main:app --app-dir services/api --reload
 ```
 
+Run with SQLite persistence:
+
+```bash
+FITLOG_REPOSITORY_BACKEND=sqlite FITLOG_DATABASE_URL=sqlite:///./fitlog.db uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Local Verification
 
 Run the backend domain tests:
@@ -44,10 +51,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is persistence foundation:
+The next recommended construction unit is persisted recommendation API:
 
-- SQLAlchemy or SQLModel selection
-- database session setup
-- migration setup
-- persisted closet items
-- persisted image analysis jobs
+- recommendation request history
+- persisted outfit candidates
+- feedback persistence
+- recommendation endpoints backed by saved recommendations

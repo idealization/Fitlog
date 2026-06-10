@@ -80,7 +80,7 @@
 
 ## U5. Persistence Foundation
 
-- Status: next
+- Status: complete
 - Scope:
   - choose SQLAlchemy or SQLModel
   - database settings
@@ -88,3 +88,30 @@
   - migration setup
   - persisted closet item repository
   - persisted image analysis job repository
+- Decision:
+  - SQLAlchemy selected for ORM and repository implementation
+  - SQLite selected for local/test persistence
+  - Alembic added for migration setup
+- Output:
+  - `services/api/app/db/base.py`
+  - `services/api/app/db/models.py`
+  - `services/api/app/db/session.py`
+  - `services/api/app/repositories/factory.py`
+  - SQLAlchemy implementations in closet and image analysis repositories
+  - `services/api/alembic.ini`
+  - `services/api/migrations/versions/0001_initial.py`
+  - `services/api/tests/test_persistence_foundation.py`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+  - `PYTHONPYCACHEPREFIX=/private/tmp/fitlog_pycache .venv/bin/python -m compileall services/api/app`
+  - `FITLOG_DATABASE_URL=sqlite:////private/tmp/fitlog_alembic_check.db .venv/bin/alembic -c services/api/alembic.ini upgrade head`
+
+## U6. Persisted Recommendation API
+
+- Status: next
+- Scope:
+  - recommendation request persistence
+  - outfit candidate persistence
+  - feedback persistence
+  - recommendation result retrieval by id
+  - persisted recommendation API tests

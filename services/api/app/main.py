@@ -4,8 +4,7 @@ from fastapi import FastAPI
 
 from .api.v1.router import api_router
 from .core.config import Settings, get_settings
-from .repositories.closet_items import InMemoryClosetItemRepository
-from .repositories.image_analysis_jobs import InMemoryImageAnalysisRepository
+from .repositories.factory import build_repositories
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -16,8 +15,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="AI wardrobe and outfit recommendation API.",
     )
     app.state.settings = resolved_settings
-    app.state.closet_repository = InMemoryClosetItemRepository()
-    app.state.image_analysis_repository = InMemoryImageAnalysisRepository()
+    repositories = build_repositories(resolved_settings)
+    app.state.closet_repository = repositories["closet_repository"]
+    app.state.image_analysis_repository = repositories["image_analysis_repository"]
+    app.state.db_engine = repositories["db_engine"]
+    app.state.db_session_factory = repositories["db_session_factory"]
     app.include_router(api_router, prefix=resolved_settings.api_v1_prefix)
 
     @app.get("/", tags=["root"])
