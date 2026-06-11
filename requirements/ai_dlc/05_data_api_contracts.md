@@ -192,6 +192,62 @@ erDiagram
 | GET | /weather/current | 현재 날씨 조회 |
 | GET | /trends | 현재 트렌드 시그널 조회 |
 
+### Notification and Morning Scheduler
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | /notification-settings | 알림 설정 조회 |
+| PATCH | /notification-settings | 알림 설정 수정 |
+| POST | /morning-recommendations/run-due | 현재 시점 기준 아침 추천 due 작업 실행 |
+
+### Notification Settings
+
+```json
+{
+  "enabled": true,
+  "timezone": "Asia/Seoul",
+  "weekdayNotificationTime": "08:00",
+  "weekendNotificationTime": "09:30",
+  "locationLabel": "Seoul",
+  "latitude": 37.5665,
+  "longitude": 126.978
+}
+```
+
+### Morning Recommendation Run
+
+```json
+{
+  "now": "2026-06-11T08:00:00+09:00",
+  "weather": {
+    "temperatureC": 21,
+    "feelsLikeC": 21,
+    "precipitationProbability": 0.1,
+    "precipitationType": "none"
+  }
+}
+```
+
+### Morning Recommendation Run Response
+
+```json
+{
+  "created": true,
+  "reason": "created",
+  "runId": "uuid",
+  "runDate": "2026-06-11",
+  "recommendationId": "uuid",
+  "weatherSource": "provided",
+  "pushDispatch": {
+    "dispatchId": "uuid",
+    "recommendationId": "uuid",
+    "status": "queued",
+    "title": "오늘의 Fitlog 추천",
+    "provider": "placeholder"
+  }
+}
+```
+
 ## 8. 작업 상태 계약
 
 비동기 작업은 공통 상태 모델을 사용한다.

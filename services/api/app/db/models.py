@@ -110,3 +110,41 @@ class WearLogRecord(Base):
     recommendation_id: Mapped[str] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=False)
     item_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class NotificationSettingsRecord(Base):
+    __tablename__ = "notification_settings"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    timezone: Mapped[str] = mapped_column(String(128), nullable=False)
+    weekday_notification_time: Mapped[str] = mapped_column(String(16), nullable=False)
+    weekend_notification_time: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    location_label: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class MorningRecommendationRunRecord(Base):
+    __tablename__ = "morning_recommendation_runs"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    run_date: Mapped[str] = mapped_column(String(16), nullable=False)
+    status: Mapped[str] = mapped_column(String(64), nullable=False)
+    reason: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    recommendation_id: Mapped[Optional[str]] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=True)
+    weather_snapshot: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PushDispatchRecord(Base):
+    __tablename__ = "push_dispatches"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    recommendation_id: Mapped[str] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=False)
+    status: Mapped[str] = mapped_column(String(64), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    provider: Mapped[str] = mapped_column(String(128), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

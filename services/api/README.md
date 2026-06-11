@@ -11,6 +11,7 @@ The current implementation contains:
 - upload ticket and image analysis job endpoints
 - recommendation endpoints that call the domain core
 - persisted recommendation history, feedback, and wear logs
+- notification settings and morning recommendation scheduler endpoints
 - demo recommendation data
 - SQLite-backed persistence option
 
@@ -56,10 +57,11 @@ python -m unittest discover services/api/tests
 - Alembic initial migration
 - Recommendation route fallback to stored closet items
 - Persisted recommendation retrieval, save, wear, and feedback routes
+- Notification settings, morning recommendation due-run, weather fallback, and push placeholder
 - Recommendation request/response schemas
 
 ## Not Implemented Yet
 
 - authentication
 - image upload and AI job processing
-- push notification scheduler
+- APNs/FCM push provider integration

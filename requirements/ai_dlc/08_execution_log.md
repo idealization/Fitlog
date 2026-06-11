@@ -130,10 +130,35 @@
 
 ## U9. Morning Notification Scheduler
 
-- Status: next
+- Status: complete
 - Scope:
   - notification settings model
   - scheduled morning recommendation creation
   - weather snapshot fallback contract
   - push dispatch placeholder
   - scheduler tests
+- Output:
+  - `services/api/app/domain/notifications.py`
+  - `services/api/app/repositories/notifications.py`
+  - `services/api/app/services/morning_scheduler.py`
+  - `services/api/app/api/v1/routes/notifications.py`
+  - `services/api/app/api/v1/schemas/notifications.py`
+  - `services/api/migrations/versions/0003_morning_scheduler.py`
+  - `services/api/tests/test_morning_scheduler_api.py`
+- API:
+  - `GET /api/v1/notification-settings`
+  - `PATCH /api/v1/notification-settings`
+  - `POST /api/v1/morning-recommendations/run-due`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+
+## U7. Mobile App Foundation
+
+- Status: next
+- Scope:
+  - React Native Expo project foundation
+  - app navigation shell
+  - backend API client
+  - closet list screen
+  - recommendation result screen
+  - local development configuration

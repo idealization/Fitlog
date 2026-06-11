@@ -65,3 +65,15 @@ class RecommendationStatus(str, Enum):
     SAVED = "saved"
     WORN = "worn"
     DISMISSED = "dismissed"
+
+
+class MorningRunStatus(str, Enum):
+    CREATED = "created"
+    SKIPPED = "skipped"
+    FAILED = "failed"
+
+
+class PushDispatchStatus(str, Enum):
+    QUEUED = "queued"
+    SENT = "sent"
+    FAILED = "failed"

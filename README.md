@@ -14,11 +14,12 @@ This repository currently contains:
 - U4 Image analysis job contract: upload ticket, analysis job creation, job status, and worker event payload
 - U5 Persistence foundation: SQLAlchemy models, SQLite repository backend, and Alembic initial migration
 - U6 Persisted recommendation API: recommendation history, saved/worn status, feedback, and wear logs
+- U9 Morning notification scheduler: notification settings, due-run scheduler, weather fallback, and push placeholder
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U6 persisted recommendation API complete; U9 morning notification scheduler is next
+- Construction / Execute: U9 morning notification scheduler complete; U7 mobile app foundation is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -52,9 +53,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is morning notification scheduler:
+The next recommended construction unit is mobile app foundation:
 
-- notification settings model
-- scheduled morning recommendation job
-- weather snapshot fallback contract
-- push dispatch placeholder
+- React Native Expo project
+- app navigation shell
+- backend API client
+- closet list and recommendation screens wired to backend contracts

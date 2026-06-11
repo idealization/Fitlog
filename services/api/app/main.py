@@ -18,6 +18,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     repositories = build_repositories(resolved_settings)
     app.state.closet_repository = repositories["closet_repository"]
     app.state.image_analysis_repository = repositories["image_analysis_repository"]
+    app.state.notification_repository = repositories["notification_repository"]
     app.state.recommendation_repository = repositories["recommendation_repository"]
     app.state.db_engine = repositories["db_engine"]
     app.state.db_session_factory = repositories["db_session_factory"]
