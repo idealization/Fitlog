@@ -330,6 +330,8 @@ erDiagram
 
 ### Image Analysis Worker Run Response
 
+이미지 품질이 충분하지 않으면 작업 상태는 `needs_user_review`가 되고 `quality.usable`은 `false`가 된다. `quality.issues`는 현재 `blur_detected`, `low_light`, `low_resolution` 코드를 사용할 수 있으며, 클라이언트는 이를 사용자용 재촬영 안내로 변환한다.
+
 ```json
 {
   "processed": true,

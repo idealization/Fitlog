@@ -89,6 +89,27 @@ class ImageAnalysisWorkerApiTests(unittest.TestCase):
         self.assertIsNone(body["status"])
         self.assertIsNone(body["result"])
 
+    def test_low_quality_image_requires_user_review_with_retake_reasons(self):
+        client = TestClient(create_app())
+        job = create_analysis_job(client, file_name="blurry-dark-low-resolution-shirt.jpg")
+
+        process_response = client.post("/api/v1/closet-items/jobs/process-next")
+
+        self.assertEqual(process_response.status_code, 200)
+        body = process_response.json()
+        self.assertEqual(body["jobId"], job["jobId"])
+        self.assertEqual(body["status"], "needs_user_review")
+        self.assertFalse(body["result"]["quality"]["usable"])
+        self.assertEqual(body["result"]["quality"]["score"], 0.25)
+        self.assertEqual(
+            body["result"]["quality"]["issues"],
+            ["blur_detected", "low_light", "low_resolution"],
+        )
+
+        status_response = client.get(f"/api/v1/closet-items/jobs/{job['jobId']}")
+        self.assertEqual(status_response.status_code, 200)
+        self.assertEqual(status_response.json()["status"], "needs_user_review")
+
     def test_sqlite_worker_result_persists_across_app_instances(self):
         with tempfile.TemporaryDirectory() as directory:
             database_path = Path(directory) / "fitlog-test.db"

@@ -26,7 +26,9 @@ import { spacing } from "../theme/spacing";
 type DraftFormState = {
   jobId: string;
   illustrationStorageKey: string;
+  qualityUsable: boolean;
   qualityScore: number;
+  qualityIssues: string[];
   name: string;
   category: Category;
   subType: string;
@@ -149,7 +151,11 @@ export function ClosetScreen() {
       const completedJob = await fitlogApi.getAnalysisJob(createdJob.jobId);
       setAnalysisJob(completedJob);
       setDraft(toDraftFormState(processed.result, newItemName, newItemCategory, newItemColor));
-      setNotice("분석 초안을 만들었어요. 확인 후 저장하세요.");
+      setNotice(
+        processed.result.quality.usable
+          ? "분석 초안을 만들었어요. 확인 후 저장하세요."
+          : "사진 품질을 확인해주세요. 재촬영하거나 검토 후 저장할 수 있어요."
+      );
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Image analysis job failed");
     } finally {
@@ -221,8 +227,12 @@ export function ClosetScreen() {
     setNotice(source === "camera" ? "사진을 촬영했어요. AI 분석을 시작하세요." : "사진을 선택했어요. AI 분석을 시작하세요.");
   }
 
-  async function saveAnalyzedDraft() {
+  async function saveAnalyzedDraft(allowLowQuality = false) {
     if (!draft) {
+      return;
+    }
+    if (!draft.qualityUsable && !allowLowQuality) {
+      setError("품질이 낮은 사진이에요. 재촬영하거나 '그래도 저장'을 선택해주세요.");
       return;
     }
 
@@ -357,10 +367,25 @@ export function ClosetScreen() {
               <View style={styles.reviewHeader}>
                 <View>
                   <Text style={styles.panelTitle}>AI 분석 검토</Text>
-                  <Text style={styles.helperText}>quality {Math.round(draft.qualityScore * 100)}%</Text>
+                  <Text style={styles.helperText}>
+                    품질 {Math.round(draft.qualityScore * 100)}% / {draft.qualityUsable ? "사용 가능" : "재촬영 권장"}
+                  </Text>
                 </View>
                 <Feather name="edit-3" size={20} color={colors.ink} />
               </View>
+              {!draft.qualityUsable ? (
+                <View style={styles.qualityWarning}>
+                  <Feather name="alert-triangle" size={20} color={colors.danger} />
+                  <View style={styles.qualityWarningBody}>
+                    <Text style={styles.qualityWarningTitle}>사진을 다시 찍으면 분석 정확도가 좋아져요</Text>
+                    {draft.qualityIssues.map((issue) => (
+                      <Text key={issue} style={styles.qualityIssueText}>
+                        {qualityIssueLabel(issue)}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
+              ) : null}
               <View style={styles.illustrationBox}>
                 <Feather name="image" size={20} color={colors.green} />
                 <Text style={styles.illustrationText} numberOfLines={1}>
@@ -469,23 +494,65 @@ export function ClosetScreen() {
                   rain
                 </Text>
               </View>
-              <View style={styles.actionRow}>
-                <ActionButton
-                  label="초안 저장"
-                  icon="check"
-                  onPress={saveAnalyzedDraft}
-                  loading={savingDraft}
-                  style={styles.flexAction}
-                />
-                <ActionButton
-                  label="초안 닫기"
-                  icon="x"
-                  tone="secondary"
-                  onPress={() => setDraft(null)}
-                  disabled={savingDraft}
-                  style={styles.flexAction}
-                />
-              </View>
+              {!draft.qualityUsable ? (
+                <>
+                  <View style={styles.actionRow}>
+                    <ActionButton
+                      label="재촬영"
+                      icon="camera"
+                      onPress={captureImage}
+                      loading={capturing}
+                      disabled={savingDraft}
+                      style={styles.flexAction}
+                    />
+                    <ActionButton
+                      label="다른 사진"
+                      icon="image"
+                      tone="secondary"
+                      onPress={pickImage}
+                      disabled={savingDraft || capturing}
+                      style={styles.flexAction}
+                    />
+                  </View>
+                  <View style={styles.actionRow}>
+                    <ActionButton
+                      label="그래도 저장"
+                      icon="alert-triangle"
+                      tone="danger"
+                      onPress={() => void saveAnalyzedDraft(true)}
+                      loading={savingDraft}
+                      disabled={capturing}
+                      style={styles.flexAction}
+                    />
+                    <ActionButton
+                      label="초안 닫기"
+                      icon="x"
+                      tone="secondary"
+                      onPress={() => setDraft(null)}
+                      disabled={savingDraft || capturing}
+                      style={styles.flexAction}
+                    />
+                  </View>
+                </>
+              ) : (
+                <View style={styles.actionRow}>
+                  <ActionButton
+                    label="초안 저장"
+                    icon="check"
+                    onPress={saveAnalyzedDraft}
+                    loading={savingDraft}
+                    style={styles.flexAction}
+                  />
+                  <ActionButton
+                    label="초안 닫기"
+                    icon="x"
+                    tone="secondary"
+                    onPress={() => setDraft(null)}
+                    disabled={savingDraft}
+                    style={styles.flexAction}
+                  />
+                </View>
+              )}
             </View>
           ) : null}
 
@@ -523,7 +590,9 @@ function toDraftFormState(
   return {
     jobId: result.source.jobId,
     illustrationStorageKey: result.illustration.storageKey,
+    qualityUsable: result.quality.usable,
     qualityScore: result.quality.score,
+    qualityIssues: result.quality.issues,
     name: draft.name,
     category: draft.category,
     subType: draft.subType,
@@ -537,6 +606,19 @@ function toDraftFormState(
     warmthText: String(draft.warmth),
     breathabilityText: String(draft.breathability)
   };
+}
+
+function qualityIssueLabel(issue: string) {
+  switch (issue) {
+    case "blur_detected":
+      return "사진이 흔들리거나 초점이 흐려요.";
+    case "low_light":
+      return "조명이 어두워 옷의 색과 디테일이 잘 보이지 않아요.";
+    case "low_resolution":
+      return "사진 해상도가 낮아 옷의 특징을 확인하기 어려워요.";
+    default:
+      return "옷 전체가 잘 보이도록 밝은 곳에서 다시 촬영해주세요.";
+  }
 }
 
 function fallbackDraft(name: string, category: Category, color: string): AnalyzedClosetItemDraft {
@@ -758,6 +840,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between"
+  },
+  qualityWarning: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    backgroundColor: "#FFF4F3",
+    padding: spacing.md
+  },
+  qualityWarningBody: {
+    flex: 1,
+    gap: spacing.xs
+  },
+  qualityWarningTitle: {
+    color: colors.danger,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  qualityIssueText: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "700"
   },
   panelTitle: {
     color: colors.text,

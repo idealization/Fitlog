@@ -44,9 +44,15 @@ def process_next_image_analysis_job(repository: ImageAnalysisJobRepository) -> I
 
     try:
         result = build_placeholder_analysis_result(running_job)
+        quality = result["quality"]
+        completion_status = (
+            ImageAnalysisJobStatus.SUCCEEDED
+            if isinstance(quality, dict) and quality.get("usable") is True
+            else ImageAnalysisJobStatus.NEEDS_USER_REVIEW
+        )
         completed_job = repository.update_job(
             running_job.id,
-            status=ImageAnalysisJobStatus.SUCCEEDED,
+            status=completion_status,
             progress=100,
             result=result,
             error=None,
@@ -70,6 +76,7 @@ def build_placeholder_analysis_result(job: ImageAnalysisJob) -> dict[str, object
     thickness = _infer_thickness(text, category)
     seasons = _infer_seasons(thickness, category)
     style_tags = _infer_style_tags(text, category)
+    quality = _infer_quality(text)
 
     primary_color = colors[0]["name"]
     item_name = _display_name(job.original_file_name, primary_color, sub_type)
@@ -99,9 +106,9 @@ def build_placeholder_analysis_result(job: ImageAnalysisJob) -> dict[str, object
             "requestedOperations": list(job.requested_operations),
         },
         "quality": {
-            "usable": True,
-            "score": 0.92,
-            "issues": [],
+            "usable": quality["usable"],
+            "score": quality["score"],
+            "issues": quality["issues"],
         },
         "detectedAttributes": {
             "category": category,
@@ -129,6 +136,23 @@ def build_placeholder_analysis_result(job: ImageAnalysisJob) -> dict[str, object
             "illustration": 0.0,
         },
         "events": ["closet_item.analyzed", "closet_item.illustration.placeholder_created"],
+    }
+
+
+def _infer_quality(text: str) -> dict[str, object]:
+    issues: list[str] = []
+    if _contains_any(text, ("blurry", "blurred", "out-of-focus")):
+        issues.append("blur_detected")
+    if _contains_any(text, ("dark", "low-light", "underexposed")):
+        issues.append("low_light")
+    if _contains_any(text, ("tiny", "low-resolution", "pixelated")):
+        issues.append("low_resolution")
+
+    score = max(0.25, 0.92 - (0.24 * len(issues)))
+    return {
+        "usable": not issues,
+        "score": round(score, 2),
+        "issues": issues,
     }
 
 

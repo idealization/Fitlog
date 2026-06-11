@@ -368,3 +368,30 @@
   - backend regression tests, Python compile, and Alembic upgrade checks
 - Next:
   - U16 Image quality retake guidance
+
+## U16. Image Quality Retake Guidance
+
+- Status: complete
+- Scope:
+  - machine-readable blur, low-light, and low-resolution issue codes
+  - `needs_user_review` completion status for unusable image results
+  - Korean quality issue explanations in the mobile review flow
+  - retake and alternate photo actions that reuse the existing image pipeline
+  - explicit `그래도 저장` override for low-quality drafts
+- Backlog Link:
+  - E2-3: user can review the analysis result before saving
+  - E2-5: low-quality images show a reason and retake guidance
+- Output:
+  - `services/api/app/services/image_analysis_worker.py`
+  - `services/api/tests/test_image_analysis_worker_api.py`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/README.md`
+- Verification:
+  - backend regression tests including multi-reason quality rejection
+  - Python compile and Alembic upgrade checks
+  - mobile JSON parsing and repository diff validation
+- Limitation:
+  - The current worker uses deterministic filename markers as a provider stub. Real pixel-level quality detection begins with the provider adapter.
+  - Mobile TypeScript and device interaction checks still require dependency installation and an Expo runtime.
+- Next:
+  - U17 Image analysis provider adapter
