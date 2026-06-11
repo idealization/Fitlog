@@ -3,6 +3,7 @@ from fastapi.responses import Response
 
 from ....repositories.closet_items import ClosetItemAlreadyExistsError, ClosetItemNotFoundError, ClosetItemRepository
 from ....repositories.image_analysis_jobs import ImageAnalysisJobNotFoundError, ImageUploadNotFoundError
+from ....services.image_analysis_worker import process_next_image_analysis_job
 from ..schemas.closet_items import (
     ClosetItemCreateRequest,
     ClosetItemResponse,
@@ -14,6 +15,7 @@ from ..schemas.image_analysis import (
     AnalysisJobResponse,
     UploadUrlRequest,
     UploadUrlResponse,
+    WorkerRunResponse,
     to_analysis_job_response,
     to_upload_url_response,
 )
@@ -64,6 +66,12 @@ def create_analysis_job(payload: AnalysisJobCreateRequest, request: Request) -> 
     except ImageUploadNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload ticket not found.") from error
     return to_analysis_job_response(job, worker_event=event)
+
+
+@router.post("/jobs/process-next", response_model=WorkerRunResponse)
+def process_next_analysis_job(request: Request) -> WorkerRunResponse:
+    result = process_next_image_analysis_job(_image_analysis_repository(request))
+    return WorkerRunResponse.from_result(result)
 
 
 @router.get("/jobs/{job_id}", response_model=AnalysisJobResponse)

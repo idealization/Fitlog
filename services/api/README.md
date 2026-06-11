@@ -9,6 +9,7 @@ The current implementation contains:
 - health endpoint
 - closet item CRUD endpoints
 - upload ticket and image analysis job endpoints
+- image analysis worker stub endpoint
 - recommendation endpoints that call the domain core
 - persisted recommendation history, feedback, and wear logs
 - notification settings and morning recommendation scheduler endpoints
@@ -53,6 +54,7 @@ python -m unittest discover services/api/tests
 - FastAPI app shell
 - Closet item CRUD routes with in-memory repository
 - Image analysis upload/job routes with in-memory repository
+- Image analysis worker stub with deterministic placeholder attributes and illustration storage contract
 - SQLAlchemy models and SQLite-backed repositories
 - Alembic initial migration
 - Recommendation route fallback to stored closet items
@@ -63,5 +65,6 @@ python -m unittest discover services/api/tests
 ## Not Implemented Yet
 
 - authentication
-- image upload and AI job processing
+- real object storage upload
+- real vision model and illustration provider integration
 - APNs/FCM push provider integration

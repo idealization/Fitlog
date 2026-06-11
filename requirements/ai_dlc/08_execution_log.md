@@ -199,10 +199,27 @@
 
 ## U10. Image Analysis Worker Stub
 
-- Status: next
+- Status: complete
 - Scope:
   - job status update path
   - deterministic placeholder analysis result
   - worker service that processes queued image analysis jobs
   - illustration placeholder storage contract
   - worker service tests
+- Backlog Link:
+  - E2-2: image attribute extraction, stubbed
+  - E2-4: illustration generation, placeholder storage contract
+- Output:
+  - `services/api/app/services/image_analysis_worker.py`
+  - `services/api/app/repositories/image_analysis_jobs.py`
+  - `services/api/app/api/v1/routes/closet_items.py`
+  - `services/api/app/api/v1/schemas/image_analysis.py`
+  - `services/api/tests/test_image_analysis_worker_api.py`
+- API:
+  - `POST /api/v1/closet-items/jobs/process-next`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+  - `PYTHONPYCACHEPREFIX=/private/tmp/fitlog_pycache .venv/bin/python -m compileall services/api/app`
+  - `FITLOG_DATABASE_URL=sqlite:////private/tmp/fitlog_alembic_u10_check.db .venv/bin/alembic -c services/api/alembic.ini upgrade head`
+- Next:
+  - U11 Mobile image analysis review flow

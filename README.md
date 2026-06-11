@@ -17,11 +17,12 @@ This repository currently contains:
 - U9 Morning notification scheduler: notification settings, due-run scheduler, weather fallback, and push placeholder
 - U7 Mobile app foundation: Expo app shell, API client, closet, recommendation, and notification settings screens
 - U8 Recommendation UI hardening: mobile item creation, upload job entry, candidate switching, feedback, and action states
+- U10 Image analysis worker stub: queued job processing, placeholder closet item draft, and illustration storage contract
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U8 recommendation UI hardening complete; U10 image analysis worker stub is next
+- Construction / Execute: U10 image analysis worker stub complete; U11 mobile image analysis review flow is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -65,9 +66,8 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is image analysis worker stub:
+The next recommended construction unit is mobile image analysis review flow:
 
-- job status update path
-- deterministic placeholder analysis result
-- illustration placeholder storage contract
-- worker service tests
+- call the image analysis worker result from the mobile upload flow
+- show detected attributes and illustration placeholder
+- let the user edit the closet item draft before saving

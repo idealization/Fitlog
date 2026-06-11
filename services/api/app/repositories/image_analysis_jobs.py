@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..db.models import ImageAnalysisJobRecord, ImageUploadTicketRecord, WorkerEventRecord
@@ -94,6 +96,31 @@ class InMemoryImageAnalysisRepository:
         self.get_job(job_id)
         return self._events[job_id]
 
+    def list_jobs_by_status(self, status: ImageAnalysisJobStatus, limit: int = 10) -> list[ImageAnalysisJob]:
+        matching_jobs = [job for job in self._jobs.values() if job.status == status]
+        return sorted(matching_jobs, key=lambda job: job.created_at or datetime.min.replace(tzinfo=timezone.utc))[:limit]
+
+    def update_job(
+        self,
+        job_id: str,
+        *,
+        status: ImageAnalysisJobStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, object] | None = None,
+        error: str | None = None,
+    ) -> ImageAnalysisJob:
+        job = self.get_job(job_id)
+        updated_job = replace(
+            job,
+            status=status or job.status,
+            progress=progress if progress is not None else job.progress,
+            result=result if result is not None else job.result,
+            error=error,
+            updated_at=datetime.now(timezone.utc),
+        )
+        self._jobs[job_id] = updated_job
+        return updated_job
+
 
 def _safe_file_name(file_name: str) -> str:
     normalized = re.sub(r"[^A-Za-z0-9._-]+", "-", file_name).strip("-")
@@ -183,6 +210,40 @@ class SqlAlchemyImageAnalysisRepository:
             if record is None:
                 raise ImageAnalysisJobNotFoundError(job_id)
             return _worker_event_record_to_domain(record)
+
+    def list_jobs_by_status(self, status: ImageAnalysisJobStatus, limit: int = 10) -> list[ImageAnalysisJob]:
+        with session_scope(self._session_factory) as session:
+            records = session.scalars(
+                select(ImageAnalysisJobRecord)
+                .where(ImageAnalysisJobRecord.status == status.value)
+                .order_by(ImageAnalysisJobRecord.created_at, ImageAnalysisJobRecord.id)
+                .limit(limit)
+            ).all()
+            return [_analysis_job_record_to_domain(record) for record in records]
+
+    def update_job(
+        self,
+        job_id: str,
+        *,
+        status: ImageAnalysisJobStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, object] | None = None,
+        error: str | None = None,
+    ) -> ImageAnalysisJob:
+        with session_scope(self._session_factory) as session:
+            record = session.get(ImageAnalysisJobRecord, job_id)
+            if record is None:
+                raise ImageAnalysisJobNotFoundError(job_id)
+            if status is not None:
+                record.status = status.value
+            if progress is not None:
+                record.progress = progress
+            if result is not None:
+                record.result = result
+            record.error = error
+            record.updated_at = datetime.now(timezone.utc)
+            session.flush()
+            return _analysis_job_record_to_domain(record)
 
 
 def _upload_ticket_to_record(ticket: ImageUploadTicket) -> ImageUploadTicketRecord:

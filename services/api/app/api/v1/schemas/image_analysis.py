@@ -6,6 +6,7 @@ from typing import Annotated, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from ....domain import ImageAnalysisJob, ImageAnalysisJobStatus, ImageUploadTicket, WorkerEvent
+from ....services.image_analysis_worker import ImageAnalysisWorkerResult
 
 DEFAULT_REQUESTED_OPERATIONS = ["quality_check", "attribute_extraction", "illustration"]
 
@@ -60,6 +61,28 @@ class AnalysisJobResponse(ApiModel):
     worker_event: Optional[WorkerEventResponse] = Field(default=None, alias="workerEvent")
 
 
+class WorkerRunResponse(ApiModel):
+    processed: bool
+    reason: str
+    job_id: Optional[str] = Field(default=None, alias="jobId")
+    status: Optional[ImageAnalysisJobStatus] = None
+    progress: Optional[int] = None
+    result: Optional[dict[str, object]] = None
+    error: Optional[str] = None
+
+    @classmethod
+    def from_result(cls, result: ImageAnalysisWorkerResult) -> "WorkerRunResponse":
+        return cls(
+            processed=result.processed,
+            reason=result.reason,
+            jobId=result.job.id if result.job else None,
+            status=result.job.status if result.job else None,
+            progress=result.job.progress if result.job else None,
+            result=result.job.result if result.job else None,
+            error=result.job.error if result.job else None,
+        )
+
+
 def to_upload_url_response(ticket: ImageUploadTicket) -> UploadUrlResponse:
     return UploadUrlResponse(
         uploadId=ticket.id,
@@ -101,4 +124,3 @@ def to_analysis_job_response(
         updatedAt=job.updated_at,
         workerEvent=to_worker_event_response(worker_event) if worker_event else None,
     )
-

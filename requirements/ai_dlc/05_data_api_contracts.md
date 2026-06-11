@@ -130,6 +130,7 @@ erDiagram
 | --- | --- | --- |
 | POST | /closet-items/uploads | 이미지 업로드 URL 발급 |
 | POST | /closet-items/analyze | 의류 분석 작업 생성 |
+| POST | /closet-items/jobs/process-next | 대기 중인 이미지 분석 작업 1건 처리 |
 | GET | /closet-items/jobs/{jobId} | 분석 작업 상태 조회 |
 | POST | /closet-items | 의류 저장 |
 | GET | /closet-items | 의류 목록 |
@@ -308,6 +309,68 @@ erDiagram
   ]
 }
 ```
+
+### Image Analysis Worker Run Response
+
+```json
+{
+  "processed": true,
+  "reason": "processed",
+  "jobId": "uuid",
+  "status": "succeeded",
+  "progress": 100,
+  "result": {
+    "provider": "fitlog_stub",
+    "modelVersion": "image-analysis-worker-stub-v1",
+    "quality": {
+      "usable": true,
+      "score": 0.92,
+      "issues": []
+    },
+    "detectedAttributes": {
+      "category": "top",
+      "subType": "shirt",
+      "colors": [
+        {
+          "name": "white",
+          "hex": "#FFFFFF",
+          "role": "primary"
+        }
+      ],
+      "pattern": "solid",
+      "materialGuess": ["cotton"],
+      "thickness": "medium",
+      "seasons": ["all"],
+      "fit": "regular",
+      "formality": "business_casual",
+      "styleTags": ["minimal", "workwear"]
+    },
+    "closetItemDraft": {
+      "name": "white shirt",
+      "category": "top",
+      "subType": "shirt",
+      "seasons": ["all"],
+      "styleTags": ["minimal", "workwear"],
+      "colors": ["white"],
+      "thickness": "medium",
+      "formality": "business_casual",
+      "status": "available",
+      "warmth": 5,
+      "rainSafe": false,
+      "breathability": 6
+    },
+    "illustration": {
+      "status": "placeholder",
+      "storageKey": "illustrations/{jobId}.png",
+      "style": "flat-fashion-illustration",
+      "background": "transparent"
+    }
+  },
+  "error": null
+}
+```
+
+대기 작업이 없으면 `processed`는 `false`, `reason`은 `no_queued_jobs`이다.
 
 ### Status
 
