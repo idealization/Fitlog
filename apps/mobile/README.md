@@ -2,6 +2,8 @@
 
 React Native Expo app foundation for Fitlog.
 
+The closet screen now supports the stubbed image analysis review path: create an analysis job, run the worker stub, review the generated closet item draft, edit the key fields, and save it to the closet.
+
 ## Setup
 
 This environment currently has the Codex-bundled `node` binary but no `npm`, `pnpm`, `yarn`, or `corepack`. Once a package manager is available:
@@ -19,4 +21,3 @@ cp .env.example .env
 ```
 
 For local iOS simulator networking, use your Mac LAN IP or Expo tunnel if `127.0.0.1` does not reach the FastAPI server.
-

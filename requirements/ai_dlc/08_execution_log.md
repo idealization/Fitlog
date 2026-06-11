@@ -223,3 +223,34 @@
   - `FITLOG_DATABASE_URL=sqlite:////private/tmp/fitlog_alembic_u10_check.db .venv/bin/alembic -c services/api/alembic.ini upgrade head`
 - Next:
   - U11 Mobile image analysis review flow
+
+## U11. Mobile Image Analysis Review Flow
+
+- Status: complete
+- Scope:
+  - mobile client method for image analysis worker execution
+  - typed image analysis result and closet item draft contract
+  - closet screen flow from analysis start to worker processing
+  - editable draft review panel
+  - save reviewed draft as a closet item
+- Backlog Link:
+  - E2-2: image attribute extraction review
+  - E2-3: user can edit AI analysis result before saving
+  - E2-4: illustration placeholder is visible in the review flow
+- Output:
+  - `apps/mobile/src/api/client.ts`
+  - `apps/mobile/src/api/types.ts`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `requirements/ai_dlc/00_intent.md`
+  - `requirements/ai_dlc/08_execution_log.md`
+  - `README.md`
+  - `apps/mobile/README.md`
+- Verification:
+  - `node -e "JSON.parse(require('fs').readFileSync('apps/mobile/package.json','utf8')); JSON.parse(require('fs').readFileSync('apps/mobile/app.json','utf8')); console.log('mobile json ok')"`
+  - `.venv/bin/python -m unittest discover services/api/tests`
+  - `PYTHONPYCACHEPREFIX=/private/tmp/fitlog_pycache .venv/bin/python -m compileall services/api/app`
+  - `FITLOG_DATABASE_URL=sqlite:////private/tmp/fitlog_alembic_u11_check.db .venv/bin/alembic -c services/api/alembic.ini upgrade head`
+- Limitation:
+  - This local Codex runtime still has no `npm`, `pnpm`, `yarn`, `corepack`, `tsc`, or `eslint`, so Expo typecheck/runtime launch were not executed.
+- Next:
+  - U12 Image upload storage adapter

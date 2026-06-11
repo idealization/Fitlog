@@ -7,7 +7,8 @@ import type {
   RecommendationFeedbackRequest,
   RecommendationRequest,
   RecommendationResponse,
-  UploadUrlResponse
+  UploadUrlResponse,
+  WorkerRunResponse
 } from "./types";
 
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000/api/v1";
@@ -54,6 +55,10 @@ export const fitlogApi = {
     request<AnalysisJobResponse>("/closet-items/analyze", {
       method: "POST",
       body: payload
+    }),
+  processNextAnalysisJob: () =>
+    request<WorkerRunResponse>("/closet-items/jobs/process-next", {
+      method: "POST"
     }),
   getAnalysisJob: (jobId: string) => request<AnalysisJobResponse>(`/closet-items/jobs/${jobId}`),
   createRecommendation: (payload: RecommendationRequest) =>

@@ -18,11 +18,12 @@ This repository currently contains:
 - U7 Mobile app foundation: Expo app shell, API client, closet, recommendation, and notification settings screens
 - U8 Recommendation UI hardening: mobile item creation, upload job entry, candidate switching, feedback, and action states
 - U10 Image analysis worker stub: queued job processing, placeholder closet item draft, and illustration storage contract
+- U11 Mobile image analysis review flow: analysis worker call, editable closet item draft, and save-to-closet handoff
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U10 image analysis worker stub complete; U11 mobile image analysis review flow is next
+- Construction / Execute: U11 mobile image analysis review flow complete; U12 image upload storage adapter is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -66,8 +67,8 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is mobile image analysis review flow:
+The next recommended construction unit is image upload storage adapter:
 
-- call the image analysis worker result from the mobile upload flow
-- show detected attributes and illustration placeholder
-- let the user edit the closet item draft before saving
+- replace memory-only upload tickets with a local storage adapter
+- add an upload completion path that can be used by mobile photo selection later
+- preserve the existing image analysis job and worker contracts

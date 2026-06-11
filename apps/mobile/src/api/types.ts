@@ -2,6 +2,8 @@ export type Category = "top" | "bottom" | "outerwear" | "dress" | "shoes" | "bag
 export type Formality = "casual" | "business_casual" | "formal";
 export type ItemStatus = "available" | "laundry" | "repair" | "storage" | "sell_or_donate";
 export type Season = "spring" | "summer" | "fall" | "winter" | "all";
+export type Thickness = "light" | "medium" | "heavy";
+export type ImageAnalysisJobStatus = "queued" | "running" | "needs_user_review" | "succeeded" | "failed" | "canceled";
 
 export type ClosetItem = {
   id: string;
@@ -11,7 +13,7 @@ export type ClosetItem = {
   seasons: Season[];
   styleTags: string[];
   colors: string[];
-  thickness: "light" | "medium" | "heavy";
+  thickness: Thickness;
   formality: Formality;
   status: ItemStatus;
   warmth: number;
@@ -29,7 +31,7 @@ export type ClosetItemCreateRequest = {
   seasons: Season[];
   styleTags?: string[];
   colors?: string[];
-  thickness?: "light" | "medium" | "heavy";
+  thickness?: Thickness;
   formality?: Formality;
   status?: ItemStatus;
   warmth?: number;
@@ -124,17 +126,76 @@ export type UploadUrlResponse = {
   headers: Record<string, string>;
 };
 
+export type AnalyzedColor = {
+  name: string;
+  hex: string;
+  role: "primary" | "secondary";
+};
+
+export type AnalyzedClosetItemDraft = {
+  name: string;
+  category: Category;
+  subType: string;
+  seasons: Season[];
+  styleTags: string[];
+  colors: string[];
+  thickness: Thickness;
+  formality: Formality;
+  status: ItemStatus;
+  warmth: number;
+  rainSafe: boolean;
+  breathability: number;
+};
+
+export type ImageAnalysisResult = {
+  provider: string;
+  modelVersion: string;
+  source: {
+    jobId: string;
+    uploadId: string;
+    storageKey: string;
+    contentType: string;
+    requestedOperations: string[];
+  };
+  quality: {
+    usable: boolean;
+    score: number;
+    issues: string[];
+  };
+  detectedAttributes: {
+    category: Category;
+    subType: string;
+    colors: AnalyzedColor[];
+    pattern: string;
+    materialGuess: string[];
+    thickness: Thickness;
+    seasons: Season[];
+    fit: string;
+    formality: Formality;
+    styleTags: string[];
+  };
+  closetItemDraft: AnalyzedClosetItemDraft;
+  illustration: {
+    status: "placeholder" | "generated" | "failed";
+    storageKey: string;
+    style: string;
+    background: string;
+  };
+  confidence: Record<string, number>;
+  events: string[];
+};
+
 export type AnalysisJobResponse = {
   jobId: string;
   type: "closet_item_analysis";
-  status: "queued" | "running" | "needs_user_review" | "succeeded" | "failed" | "canceled";
+  status: ImageAnalysisJobStatus;
   progress: number;
   uploadId: string;
   storageKey: string;
   originalFileName: string;
   contentType: string;
   requestedOperations: string[];
-  result: Record<string, unknown> | null;
+  result: ImageAnalysisResult | null;
   error: string | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -145,4 +206,14 @@ export type AnalysisJobResponse = {
     storageKey: string;
     requestedOperations: string[];
   } | null;
+};
+
+export type WorkerRunResponse = {
+  processed: boolean;
+  reason: string;
+  jobId: string | null;
+  status: ImageAnalysisJobStatus | null;
+  progress: number | null;
+  result: ImageAnalysisResult | null;
+  error: string | null;
 };
