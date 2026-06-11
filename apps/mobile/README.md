@@ -2,7 +2,7 @@
 
 React Native Expo app foundation for Fitlog.
 
-The closet screen now supports the stubbed image analysis review path: create an analysis job, run the worker stub, review the generated closet item draft, edit the key fields, and save it to the closet.
+The closet screen now supports selecting a real image, previewing its metadata, uploading the image bytes, running the analysis worker, editing the generated closet item draft, and saving it to the closet.
 
 ## Setup
 

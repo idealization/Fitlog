@@ -286,3 +286,32 @@
   - `node -e "JSON.parse(require('fs').readFileSync('apps/mobile/package.json','utf8')); JSON.parse(require('fs').readFileSync('apps/mobile/app.json','utf8')); console.log('mobile json ok')"`
 - Next:
   - U13 Mobile photo picker upload integration
+
+## U13. Mobile Photo Picker Upload Integration
+
+- Status: complete
+- Scope:
+  - Expo image picker dependency and iOS photo permission configuration
+  - selected image preview and file metadata
+  - native binary file upload with Expo FileSystem
+  - web Blob upload fallback
+  - upload ticket, object upload, analysis job, worker, and review flow handoff
+- Backlog Link:
+  - E2-1: user can select and upload a clothing photo
+  - E2-2: uploaded photo continues into attribute extraction
+  - E2-3: analysis result continues into the editable review form
+- Output:
+  - `apps/mobile/package.json`
+  - `apps/mobile/app.json`
+  - `apps/mobile/src/api/client.ts`
+  - `apps/mobile/src/api/types.ts`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/README.md`
+- Verification:
+  - mobile JSON configuration parsing with Node
+  - backend regression tests
+  - Python compile and Alembic upgrade checks
+- Limitation:
+  - Package installation, TypeScript typecheck, and Expo runtime verification still require a local package manager.
+- Next:
+  - U14 Camera capture flow

@@ -126,6 +126,15 @@ export type UploadUrlResponse = {
   headers: Record<string, string>;
 };
 
+export type UploadCompletionResponse = {
+  uploadId: string;
+  uploaded: boolean;
+  storageKey: string;
+  contentType: string;
+  byteSize: number;
+  checksumSha256: string;
+};
+
 export type AnalyzedColor = {
   name: string;
   hex: string;

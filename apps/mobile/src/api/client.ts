@@ -1,3 +1,6 @@
+import * as FileSystem from "expo-file-system";
+import { Platform } from "react-native";
+
 import type {
   AnalysisJobResponse,
   ClosetItem,
@@ -7,6 +10,7 @@ import type {
   RecommendationFeedbackRequest,
   RecommendationRequest,
   RecommendationResponse,
+  UploadCompletionResponse,
   UploadUrlResponse,
   WorkerRunResponse
 } from "./types";
@@ -15,6 +19,8 @@ const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000/api/v1";
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? DEFAULT_API_BASE_URL;
+
+const API_ORIGIN = API_BASE_URL.endsWith("/api/v1") ? API_BASE_URL.slice(0, -7) : API_BASE_URL;
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
@@ -38,6 +44,45 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return response.json() as Promise<T>;
 }
 
+async function uploadFile(
+  uploadUrl: string,
+  fileUri: string,
+  contentType: string
+): Promise<UploadCompletionResponse> {
+  const resolvedUrl = resolveUploadUrl(uploadUrl);
+
+  if (Platform.OS === "web") {
+    const fileResponse = await fetch(fileUri);
+    const body = await fileResponse.blob();
+    const response = await fetch(resolvedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body
+    });
+    if (!response.ok) {
+      throw new Error((await response.text()) || `Upload failed with ${response.status}`);
+    }
+    return response.json() as Promise<UploadCompletionResponse>;
+  }
+
+  const response = await FileSystem.uploadAsync(resolvedUrl, fileUri, {
+    httpMethod: "PUT",
+    headers: { "Content-Type": contentType },
+    uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT
+  });
+  if (response.status < 200 || response.status >= 300) {
+    throw new Error(response.body || `Upload failed with ${response.status}`);
+  }
+  return JSON.parse(response.body) as UploadCompletionResponse;
+}
+
+function resolveUploadUrl(uploadUrl: string) {
+  if (/^https?:\/\//.test(uploadUrl)) {
+    return uploadUrl;
+  }
+  return `${API_ORIGIN}${uploadUrl.startsWith("/") ? "" : "/"}${uploadUrl}`;
+}
+
 export const fitlogApi = {
   health: () => request<{ service: string; status: string; version: string }>("/health"),
   listClosetItems: () => request<ClosetItem[]>("/closet-items"),
@@ -51,6 +96,7 @@ export const fitlogApi = {
       method: "POST",
       body: payload
     }),
+  uploadFile,
   createAnalysisJob: (payload: { uploadId: string; requestedOperations?: string[] }) =>
     request<AnalysisJobResponse>("/closet-items/analyze", {
       method: "POST",

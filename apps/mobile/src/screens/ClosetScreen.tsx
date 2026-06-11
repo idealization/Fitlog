@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Image, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 import { fitlogApi } from "../api/client";
 import type {
@@ -54,6 +55,7 @@ export function ClosetScreen() {
   const [newItemName, setNewItemName] = useState("White shirt");
   const [newItemCategory, setNewItemCategory] = useState<Category>("top");
   const [newItemColor, setNewItemColor] = useState("white");
+  const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJobResponse | null>(null);
   const [workerRun, setWorkerRun] = useState<WorkerRunResponse | null>(null);
   const [draft, setDraft] = useState<DraftFormState | null>(null);
@@ -103,16 +105,27 @@ export function ClosetScreen() {
   }
 
   async function startAnalysisJob() {
+    if (!selectedImage) {
+      setError("먼저 분석할 옷 사진을 선택해주세요.");
+      return;
+    }
+
     setAnalyzing(true);
     setError(null);
     setNotice(null);
     setDraft(null);
     setWorkerRun(null);
     try {
+      const contentType = selectedImage.mimeType ?? inferImageContentType(selectedImage.fileName ?? "");
+      const fileName = buildUploadFileName(newItemName, newItemCategory, newItemColor, contentType);
       const ticket = await fitlogApi.createUploadTicket({
-        fileName: `${slugify(newItemName) || "closet-item"}.jpg`,
-        contentType: "image/jpeg"
+        fileName,
+        contentType,
+        byteSize: selectedImage.fileSize && selectedImage.fileSize > 0 ? selectedImage.fileSize : undefined
       });
+      setNotice("사진을 업로드하고 있어요.");
+      await fitlogApi.uploadFile(ticket.uploadUrl, selectedImage.uri, contentType);
+      setNotice("사진 분석 작업을 만들고 있어요.");
       const createdJob = await fitlogApi.createAnalysisJob({
         uploadId: ticket.uploadId,
         requestedOperations: ["quality_check", "attribute_extraction", "illustration"]
@@ -140,6 +153,32 @@ export function ClosetScreen() {
     }
   }
 
+  async function pickImage() {
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.85
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      const asset = result.assets[0];
+      setSelectedImage(asset);
+      setAnalysisJob(null);
+      setWorkerRun(null);
+      setDraft(null);
+      setNotice("사진을 선택했어요. AI 분석을 시작하세요.");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "사진을 불러오지 못했어요.");
+    }
+  }
+
   async function saveAnalyzedDraft() {
     if (!draft) {
       return;
@@ -154,6 +193,7 @@ export function ClosetScreen() {
       setDraft(null);
       setAnalysisJob(null);
       setWorkerRun(null);
+      setSelectedImage(null);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Save analyzed item failed");
@@ -211,17 +251,46 @@ export function ClosetScreen() {
                 </Text>
               ))}
             </View>
+            {selectedImage ? (
+              <View style={styles.selectedImagePanel}>
+                <Image source={{ uri: selectedImage.uri }} style={styles.selectedImage} resizeMode="cover" />
+                <View style={styles.selectedImageMeta}>
+                  <Text style={styles.selectedImageName} numberOfLines={1}>
+                    {selectedImage.fileName ?? "selected-image.jpg"}
+                  </Text>
+                  <Text style={styles.helperText}>
+                    {selectedImage.width} x {selectedImage.height}
+                    {selectedImage.fileSize ? ` / ${formatFileSize(selectedImage.fileSize)}` : ""}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
             <View style={styles.actionRow}>
-              <ActionButton label="아이템 저장" icon="plus" onPress={createItem} loading={creating} style={styles.flexAction} />
+              <ActionButton
+                label={selectedImage ? "사진 변경" : "사진 선택"}
+                icon="image"
+                tone="secondary"
+                onPress={pickImage}
+                disabled={analyzing}
+                style={styles.flexAction}
+              />
               <ActionButton
                 label="AI 분석"
                 icon="upload"
-                tone="secondary"
                 onPress={startAnalysisJob}
                 loading={analyzing}
+                disabled={!selectedImage}
                 style={styles.flexAction}
               />
             </View>
+            <ActionButton
+              label="직접 입력으로 저장"
+              icon="plus"
+              tone="secondary"
+              onPress={createItem}
+              loading={creating}
+              disabled={analyzing}
+            />
             {analysisJob ? (
               <View style={styles.jobSummary}>
                 <Text style={styles.jobStatus}>
@@ -485,6 +554,45 @@ function uniqueItemId(value: string) {
   return `${base}-${Date.now()}`;
 }
 
+function buildUploadFileName(name: string, category: Category, color: string, contentType: string) {
+  const base = slugify(`${color}-${category}-${name}`) || "closet-item";
+  return `${base}.${extensionForContentType(contentType)}`;
+}
+
+function inferImageContentType(fileName: string) {
+  const extension = fileName.split(".").pop()?.toLowerCase();
+  if (extension === "png") {
+    return "image/png";
+  }
+  if (extension === "webp") {
+    return "image/webp";
+  }
+  if (extension === "heic" || extension === "heif") {
+    return "image/heic";
+  }
+  return "image/jpeg";
+}
+
+function extensionForContentType(contentType: string) {
+  if (contentType === "image/png") {
+    return "png";
+  }
+  if (contentType === "image/webp") {
+    return "webp";
+  }
+  if (contentType === "image/heic" || contentType === "image/heif") {
+    return "heic";
+  }
+  return "jpg";
+}
+
+function formatFileSize(byteSize: number) {
+  if (byteSize < 1024 * 1024) {
+    return `${Math.max(1, Math.round(byteSize / 1024))} KB`;
+  }
+  return `${(byteSize / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function slugify(value: string) {
   return value
     .trim()
@@ -560,6 +668,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: spacing.md,
     gap: spacing.sm
+  },
+  selectedImagePanel: {
+    minHeight: 104,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+    padding: spacing.sm
+  },
+  selectedImage: {
+    width: 88,
+    height: 88,
+    borderRadius: 8,
+    backgroundColor: colors.surfaceAlt
+  },
+  selectedImageMeta: {
+    flex: 1,
+    gap: spacing.xs
+  },
+  selectedImageName: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
   },
   reviewPanel: {
     backgroundColor: colors.surface,
