@@ -113,6 +113,33 @@ class UploadStorageApiTests(unittest.TestCase):
 
             self.assertEqual(response.status_code, 404)
 
+    def test_analysis_rejects_completed_ticket_when_stored_object_is_missing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            storage_root = Path(directory) / "uploads"
+            client = TestClient(create_app(storage_settings(storage_root)))
+            payload = b"temporary image bytes"
+            upload_response = client.post(
+                "/api/v1/closet-items/uploads",
+                json={"fileName": "missing.jpg", "contentType": "image/jpeg", "byteSize": len(payload)},
+            )
+            self.assertEqual(upload_response.status_code, 201)
+            upload = upload_response.json()
+
+            completion_response = client.put(
+                upload["uploadUrl"],
+                content=payload,
+                headers={"Content-Type": "image/jpeg"},
+            )
+            self.assertEqual(completion_response.status_code, 200)
+            (storage_root / upload["storageKey"]).unlink()
+
+            response = client.post(
+                "/api/v1/closet-items/analyze",
+                json={"uploadId": upload["uploadId"]},
+            )
+
+            self.assertEqual(response.status_code, 409)
+
 
 if __name__ == "__main__":
     unittest.main()

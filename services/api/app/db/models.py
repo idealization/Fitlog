@@ -40,6 +40,9 @@ class ImageUploadTicketRecord(Base):
     byte_size: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     checksum_sha256: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    uploaded_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    uploaded_byte_size: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    uploaded_checksum_sha256: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     method: Mapped[str] = mapped_column(String(16), nullable=False)
     headers: Mapped[dict[str, str]] = mapped_column(JSON, nullable=False)
 

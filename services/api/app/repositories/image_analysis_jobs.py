@@ -17,6 +17,10 @@ class ImageUploadNotFoundError(Exception):
     pass
 
 
+class ImageUploadNotReadyError(Exception):
+    pass
+
+
 class ImageAnalysisJobNotFoundError(Exception):
     pass
 
@@ -57,12 +61,31 @@ class InMemoryImageAnalysisRepository:
         except KeyError as error:
             raise ImageUploadNotFoundError(upload_id) from error
 
+    def mark_upload_completed(
+        self,
+        upload_id: str,
+        *,
+        byte_size: int,
+        checksum_sha256: str,
+    ) -> ImageUploadTicket:
+        upload = self.get_upload_ticket(upload_id)
+        completed_upload = replace(
+            upload,
+            uploaded_at=datetime.now(timezone.utc),
+            uploaded_byte_size=byte_size,
+            uploaded_checksum_sha256=checksum_sha256,
+        )
+        self._uploads[upload_id] = completed_upload
+        return completed_upload
+
     def create_analysis_job(
         self,
         upload_id: str,
         requested_operations: tuple[str, ...],
     ) -> tuple[ImageAnalysisJob, WorkerEvent]:
         upload = self.get_upload_ticket(upload_id)
+        if upload.uploaded_at is None:
+            raise ImageUploadNotReadyError(upload_id)
         now = datetime.now(timezone.utc)
         job_id = uuid4().hex
         job = ImageAnalysisJob(
@@ -165,12 +188,31 @@ class SqlAlchemyImageAnalysisRepository:
                 raise ImageUploadNotFoundError(upload_id)
             return _upload_ticket_record_to_domain(record)
 
+    def mark_upload_completed(
+        self,
+        upload_id: str,
+        *,
+        byte_size: int,
+        checksum_sha256: str,
+    ) -> ImageUploadTicket:
+        with session_scope(self._session_factory) as session:
+            record = session.get(ImageUploadTicketRecord, upload_id)
+            if record is None:
+                raise ImageUploadNotFoundError(upload_id)
+            record.uploaded_at = datetime.now(timezone.utc)
+            record.uploaded_byte_size = byte_size
+            record.uploaded_checksum_sha256 = checksum_sha256
+            session.flush()
+            return _upload_ticket_record_to_domain(record)
+
     def create_analysis_job(
         self,
         upload_id: str,
         requested_operations: tuple[str, ...],
     ) -> tuple[ImageAnalysisJob, WorkerEvent]:
         upload = self.get_upload_ticket(upload_id)
+        if upload.uploaded_at is None:
+            raise ImageUploadNotReadyError(upload_id)
         now = datetime.now(timezone.utc)
         job_id = uuid4().hex
         job = ImageAnalysisJob(
@@ -256,6 +298,9 @@ def _upload_ticket_to_record(ticket: ImageUploadTicket) -> ImageUploadTicketReco
         byte_size=ticket.byte_size,
         checksum_sha256=ticket.checksum_sha256,
         expires_at=ticket.expires_at,
+        uploaded_at=ticket.uploaded_at,
+        uploaded_byte_size=ticket.uploaded_byte_size,
+        uploaded_checksum_sha256=ticket.uploaded_checksum_sha256,
         method=ticket.method,
         headers=ticket.headers,
     )
@@ -271,6 +316,9 @@ def _upload_ticket_record_to_domain(record: ImageUploadTicketRecord) -> ImageUpl
         byte_size=record.byte_size,
         checksum_sha256=record.checksum_sha256,
         expires_at=record.expires_at,
+        uploaded_at=record.uploaded_at,
+        uploaded_byte_size=record.uploaded_byte_size,
+        uploaded_checksum_sha256=record.uploaded_checksum_sha256,
         method=record.method,
         headers=dict(record.headers),
     )

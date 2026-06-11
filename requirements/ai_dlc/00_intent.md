@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U14 Camera capture flow complete; next unit is U15 Upload readiness enforcement
+- Construction / Execute: U15 Upload readiness enforcement complete; next unit is U16 Image quality retake guidance
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -44,7 +44,8 @@ flowchart TD
     U11 --> U12["U12: Image upload storage adapter (complete)"]
     U12 --> U13["U13: Mobile photo picker upload integration (complete)"]
     U13 --> U14["U14: Camera capture flow (complete)"]
-    U14 --> U15["U15: Upload readiness enforcement"]
+    U14 --> U15["U15: Upload readiness enforcement (complete)"]
+    U15 --> U16["U16: Image quality retake guidance"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -66,6 +67,7 @@ flowchart TD
 - Image upload tickets expose a local PUT upload path that validates content type, byte size, and checksum before analysis.
 - Mobile closet registration can select a real image, upload its bytes, and continue into the analysis review flow.
 - Mobile closet registration can request camera permission, capture a clothing photo, and reuse the upload and analysis review flow.
+- Analysis jobs are created only after upload completion metadata is persisted and the stored image object exists.
 
 ## Critical Human Decisions Still Open
 

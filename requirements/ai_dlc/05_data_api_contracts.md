@@ -299,6 +299,8 @@ erDiagram
 
 ### Image Analysis Job Creation
 
+분석 작업은 업로드 완료 메타데이터가 저장되고 `storageKey`의 이미지 객체가 실제로 존재할 때만 생성된다. 티켓은 있지만 업로드가 끝나지 않았거나 객체가 사라진 경우 `409 Conflict`와 `Upload object is not ready for analysis.`를 반환한다.
+
 ```json
 {
   "uploadId": "uuid-or-token",

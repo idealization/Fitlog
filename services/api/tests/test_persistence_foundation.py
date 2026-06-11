@@ -16,6 +16,7 @@ def sqlite_settings(path: Path) -> Settings:
         environment="test",
         repository_backend="sqlite",
         database_url=f"sqlite:///{path}",
+        upload_storage_root=str(path.parent / "uploads"),
     )
 
 
@@ -61,17 +62,32 @@ class PersistenceFoundationTests(unittest.TestCase):
                 json={"fileName": "shirt.jpg", "contentType": "image/jpeg"},
             )
             self.assertEqual(upload_response.status_code, 201)
-            upload_id = upload_response.json()["uploadId"]
+            upload = upload_response.json()
+            upload_id = upload["uploadId"]
 
-            job_response = first_client.post(
+            premature_job_response = first_client.post(
+                "/api/v1/closet-items/analyze",
+                json={"uploadId": upload_id},
+            )
+            self.assertEqual(premature_job_response.status_code, 409)
+
+            completion_response = first_client.put(
+                upload["uploadUrl"],
+                content=b"persisted image bytes",
+                headers={"Content-Type": "image/jpeg"},
+            )
+            self.assertEqual(completion_response.status_code, 200)
+
+            second_client = TestClient(create_app(sqlite_settings(database_path)))
+            job_response = second_client.post(
                 "/api/v1/closet-items/analyze",
                 json={"uploadId": upload_id},
             )
             self.assertEqual(job_response.status_code, 202)
             job_id = job_response.json()["jobId"]
 
-            second_client = TestClient(create_app(sqlite_settings(database_path)))
-            status_response = second_client.get(f"/api/v1/closet-items/jobs/{job_id}")
+            third_client = TestClient(create_app(sqlite_settings(database_path)))
+            status_response = third_client.get(f"/api/v1/closet-items/jobs/{job_id}")
 
             self.assertEqual(status_response.status_code, 200)
             body = status_response.json()
@@ -82,4 +98,3 @@ class PersistenceFoundationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

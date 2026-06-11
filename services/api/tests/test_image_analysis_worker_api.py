@@ -16,19 +16,28 @@ def sqlite_settings(path: Path) -> Settings:
         environment="test",
         repository_backend="sqlite",
         database_url=f"sqlite:///{path}",
+        upload_storage_root=str(path.parent / "uploads"),
     )
 
 
 def create_analysis_job(client: TestClient, file_name: str = "white shirt.jpg") -> dict[str, object]:
+    payload = f"fake image bytes for {file_name}".encode()
     upload_response = client.post(
         "/api/v1/closet-items/uploads",
-        json={"fileName": file_name, "contentType": "image/jpeg"},
+        json={"fileName": file_name, "contentType": "image/jpeg", "byteSize": len(payload)},
     )
     assert upload_response.status_code == 201
+    upload = upload_response.json()
+    completion_response = client.put(
+        upload["uploadUrl"],
+        content=payload,
+        headers={"Content-Type": "image/jpeg"},
+    )
+    assert completion_response.status_code == 200
 
     job_response = client.post(
         "/api/v1/closet-items/analyze",
-        json={"uploadId": upload_response.json()["uploadId"]},
+        json={"uploadId": upload["uploadId"]},
     )
     assert job_response.status_code == 202
     return job_response.json()

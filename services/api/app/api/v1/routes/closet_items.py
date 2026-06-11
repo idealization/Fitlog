@@ -5,7 +5,11 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 from fastapi.responses import Response
 
 from ....repositories.closet_items import ClosetItemAlreadyExistsError, ClosetItemNotFoundError, ClosetItemRepository
-from ....repositories.image_analysis_jobs import ImageAnalysisJobNotFoundError, ImageUploadNotFoundError
+from ....repositories.image_analysis_jobs import (
+    ImageAnalysisJobNotFoundError,
+    ImageUploadNotFoundError,
+    ImageUploadNotReadyError,
+)
 from ....services.image_analysis_worker import process_next_image_analysis_job
 from ..schemas.closet_items import (
     ClosetItemCreateRequest,
@@ -96,6 +100,11 @@ async def upload_object(
         content_type=ticket.content_type,
         data=body,
     )
+    _image_analysis_repository(request).mark_upload_completed(
+        upload_id,
+        byte_size=stored_object.byte_size,
+        checksum_sha256=stored_object.checksum_sha256,
+    )
 
     return to_upload_completion_response(ticket, stored_object)
 
@@ -103,12 +112,20 @@ async def upload_object(
 @router.post("/analyze", response_model=AnalysisJobResponse, status_code=status.HTTP_202_ACCEPTED)
 def create_analysis_job(payload: AnalysisJobCreateRequest, request: Request) -> AnalysisJobResponse:
     try:
+        ticket = _image_analysis_repository(request).get_upload_ticket(payload.upload_id)
+        if ticket.uploaded_at is None or not _upload_storage(request).exists(ticket.storage_key):
+            raise ImageUploadNotReadyError(payload.upload_id)
         job, event = _image_analysis_repository(request).create_analysis_job(
             upload_id=payload.upload_id,
             requested_operations=tuple(payload.requested_operations),
         )
     except ImageUploadNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload ticket not found.") from error
+    except ImageUploadNotReadyError as error:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Upload object is not ready for analysis.",
+        ) from error
     return to_analysis_job_response(job, worker_event=event)
 
 

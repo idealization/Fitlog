@@ -342,3 +342,29 @@
   - Package installation, TypeScript typecheck, camera hardware verification, and Expo runtime verification still require a local package manager and device or simulator.
 - Next:
   - U15 Upload readiness enforcement
+
+## U15. Upload Readiness Enforcement
+
+- Status: complete
+- Scope:
+  - persisted upload completion timestamp, byte size, and checksum metadata
+  - analysis job rejection before raw object upload completion
+  - physical storage object existence check before queueing analysis
+  - upload readiness migration for existing SQLite databases
+- Backlog Link:
+  - E2-1: uploaded image is stored and its completion state is tracked
+  - E2-2: attribute extraction starts only from a ready image object
+- Output:
+  - `services/api/app/domain/image_analysis.py`
+  - `services/api/app/db/models.py`
+  - `services/api/app/repositories/image_analysis_jobs.py`
+  - `services/api/app/api/v1/routes/closet_items.py`
+  - `services/api/migrations/versions/0004_upload_readiness.py`
+  - image analysis, persistence, worker, and upload storage API tests
+- Verification:
+  - in-memory upload readiness rejection
+  - SQLite upload completion persistence across app instances
+  - missing stored object rejection
+  - backend regression tests, Python compile, and Alembic upgrade checks
+- Next:
+  - U16 Image quality retake guidance

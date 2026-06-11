@@ -16,6 +16,9 @@ class ImageUploadTicket:
     byte_size: int | None
     checksum_sha256: str | None
     expires_at: datetime
+    uploaded_at: datetime | None = None
+    uploaded_byte_size: int | None = None
+    uploaded_checksum_sha256: str | None = None
     method: str = "PUT"
     headers: dict[str, str] = field(default_factory=dict)
 
@@ -43,4 +46,3 @@ class ImageAnalysisJob:
     error: str | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
-

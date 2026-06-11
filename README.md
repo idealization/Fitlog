@@ -22,11 +22,12 @@ This repository currently contains:
 - U12 Image upload storage adapter: local raw upload endpoint, byte/checksum validation, and file-backed storage root
 - U13 Mobile photo picker upload integration: image selection, preview, raw upload, and analysis review handoff
 - U14 Camera capture flow: camera permission, clothing photo capture, preview, and shared analysis handoff
+- U15 Upload readiness enforcement: persisted completion metadata and missing-object analysis rejection
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U14 camera capture flow complete; U15 upload readiness enforcement is next
+- Construction / Execute: U15 upload readiness enforcement complete; U16 image quality retake guidance is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -76,8 +77,8 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is upload readiness enforcement:
+The next recommended construction unit is image quality retake guidance:
 
-- persist or verify upload completion before creating an analysis job
-- reject analysis jobs whose image object is missing
-- cover in-memory and SQLite repository paths with API regression tests
+- expose quality failure reasons from the analysis result
+- guide the user to retake or reselect a low-quality clothing photo
+- prevent low-quality drafts from being saved without an explicit user decision
