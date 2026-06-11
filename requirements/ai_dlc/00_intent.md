@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U13 Mobile photo picker upload integration complete; next unit is U14 Camera capture flow
+- Construction / Execute: U14 Camera capture flow complete; next unit is U15 Upload readiness enforcement
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -43,7 +43,8 @@ flowchart TD
     U10 --> U11["U11: Mobile image analysis review flow (complete)"]
     U11 --> U12["U12: Image upload storage adapter (complete)"]
     U12 --> U13["U13: Mobile photo picker upload integration (complete)"]
-    U13 --> U14["U14: Camera capture flow"]
+    U13 --> U14["U14: Camera capture flow (complete)"]
+    U14 --> U15["U15: Upload readiness enforcement"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -64,6 +65,7 @@ flowchart TD
 - Mobile closet registration can run image analysis, show an editable draft, and save that draft as a closet item.
 - Image upload tickets expose a local PUT upload path that validates content type, byte size, and checksum before analysis.
 - Mobile closet registration can select a real image, upload its bytes, and continue into the analysis review flow.
+- Mobile closet registration can request camera permission, capture a clothing photo, and reuse the upload and analysis review flow.
 
 ## Critical Human Decisions Still Open
 

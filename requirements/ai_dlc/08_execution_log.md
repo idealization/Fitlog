@@ -315,3 +315,30 @@
   - Package installation, TypeScript typecheck, and Expo runtime verification still require a local package manager.
 - Next:
   - U14 Camera capture flow
+
+## U14. Camera Capture Flow
+
+- Status: complete
+- Scope:
+  - Expo camera permission configuration and runtime permission request
+  - camera launch from the closet registration screen
+  - captured image preview with source metadata
+  - shared upload ticket, object upload, analysis worker, and review flow
+  - permission denial guidance without blocking gallery registration
+- Backlog Link:
+  - E2-1: user can capture and upload a clothing photo
+  - E1-4: camera permission denial does not block the gallery flow
+  - E2-3: captured photo continues into the editable review form
+- Output:
+  - `apps/mobile/app.json`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/README.md`
+- Verification:
+  - mobile JSON configuration parsing with Node
+  - backend regression tests
+  - Python compile and Alembic upgrade checks
+  - repository diff whitespace validation
+- Limitation:
+  - Package installation, TypeScript typecheck, camera hardware verification, and Expo runtime verification still require a local package manager and device or simulator.
+- Next:
+  - U15 Upload readiness enforcement

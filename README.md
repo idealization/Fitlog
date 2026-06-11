@@ -21,11 +21,12 @@ This repository currently contains:
 - U11 Mobile image analysis review flow: analysis worker call, editable closet item draft, and save-to-closet handoff
 - U12 Image upload storage adapter: local raw upload endpoint, byte/checksum validation, and file-backed storage root
 - U13 Mobile photo picker upload integration: image selection, preview, raw upload, and analysis review handoff
+- U14 Camera capture flow: camera permission, clothing photo capture, preview, and shared analysis handoff
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U13 mobile photo picker upload integration complete; U14 camera capture flow is next
+- Construction / Execute: U14 camera capture flow complete; U15 upload readiness enforcement is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -75,8 +76,8 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is camera capture flow:
+The next recommended construction unit is upload readiness enforcement:
 
-- request camera permission from the closet screen
-- capture a clothing photo with the rear camera
-- reuse the existing upload and analysis review pipeline
+- persist or verify upload completion before creating an analysis job
+- reject analysis jobs whose image object is missing
+- cover in-memory and SQLite repository paths with API regression tests

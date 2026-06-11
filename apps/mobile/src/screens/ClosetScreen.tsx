@@ -41,6 +41,8 @@ type DraftFormState = {
   breathabilityText: string;
 };
 
+type ImageSource = "library" | "camera";
+
 const categoryOptions: Category[] = ["top", "bottom", "outerwear", "dress", "shoes", "bag", "accessory"];
 const quickCategoryOptions: Category[] = ["top", "bottom", "shoes", "outerwear"];
 const thicknessOptions: Thickness[] = ["light", "medium", "heavy"];
@@ -51,11 +53,13 @@ export function ClosetScreen() {
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [capturing, setCapturing] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [newItemName, setNewItemName] = useState("White shirt");
   const [newItemCategory, setNewItemCategory] = useState<Category>("top");
   const [newItemColor, setNewItemColor] = useState("white");
   const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [selectedImageSource, setSelectedImageSource] = useState<ImageSource | null>(null);
   const [analysisJob, setAnalysisJob] = useState<AnalysisJobResponse | null>(null);
   const [workerRun, setWorkerRun] = useState<WorkerRunResponse | null>(null);
   const [draft, setDraft] = useState<DraftFormState | null>(null);
@@ -168,15 +172,53 @@ export function ClosetScreen() {
         return;
       }
 
-      const asset = result.assets[0];
-      setSelectedImage(asset);
-      setAnalysisJob(null);
-      setWorkerRun(null);
-      setDraft(null);
-      setNotice("사진을 선택했어요. AI 분석을 시작하세요.");
+      acceptImage(result.assets[0], "library");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "사진을 불러오지 못했어요.");
     }
+  }
+
+  async function captureImage() {
+    setCapturing(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        setError(
+          permission.canAskAgain
+            ? "옷 사진을 촬영하려면 카메라 권한이 필요해요."
+            : "카메라 권한이 꺼져 있어요. 기기 설정에서 Fitlog의 카메라 권한을 허용해주세요."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.85
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      acceptImage(result.assets[0], "camera");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "사진 촬영을 시작하지 못했어요.");
+    } finally {
+      setCapturing(false);
+    }
+  }
+
+  function acceptImage(asset: ImagePicker.ImagePickerAsset, source: ImageSource) {
+    setSelectedImage(asset);
+    setSelectedImageSource(source);
+    setAnalysisJob(null);
+    setWorkerRun(null);
+    setDraft(null);
+    setNotice(source === "camera" ? "사진을 촬영했어요. AI 분석을 시작하세요." : "사진을 선택했어요. AI 분석을 시작하세요.");
   }
 
   async function saveAnalyzedDraft() {
@@ -194,6 +236,7 @@ export function ClosetScreen() {
       setAnalysisJob(null);
       setWorkerRun(null);
       setSelectedImage(null);
+      setSelectedImageSource(null);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Save analyzed item failed");
@@ -259,7 +302,7 @@ export function ClosetScreen() {
                     {selectedImage.fileName ?? "selected-image.jpg"}
                   </Text>
                   <Text style={styles.helperText}>
-                    {selectedImage.width} x {selectedImage.height}
+                    {selectedImageSource === "camera" ? "촬영" : "갤러리"} / {selectedImage.width} x {selectedImage.height}
                     {selectedImage.fileSize ? ` / ${formatFileSize(selectedImage.fileSize)}` : ""}
                   </Text>
                 </View>
@@ -267,29 +310,37 @@ export function ClosetScreen() {
             ) : null}
             <View style={styles.actionRow}>
               <ActionButton
-                label={selectedImage ? "사진 변경" : "사진 선택"}
+                label="갤러리"
                 icon="image"
                 tone="secondary"
                 onPress={pickImage}
-                disabled={analyzing}
+                disabled={analyzing || capturing}
                 style={styles.flexAction}
               />
               <ActionButton
-                label="AI 분석"
-                icon="upload"
-                onPress={startAnalysisJob}
-                loading={analyzing}
-                disabled={!selectedImage}
+                label="촬영"
+                icon="camera"
+                tone="secondary"
+                onPress={captureImage}
+                loading={capturing}
+                disabled={analyzing}
                 style={styles.flexAction}
               />
             </View>
+            <ActionButton
+              label="AI 분석"
+              icon="upload"
+              onPress={startAnalysisJob}
+              loading={analyzing}
+              disabled={!selectedImage || capturing}
+            />
             <ActionButton
               label="직접 입력으로 저장"
               icon="plus"
               tone="secondary"
               onPress={createItem}
               loading={creating}
-              disabled={analyzing}
+              disabled={analyzing || capturing}
             />
             {analysisJob ? (
               <View style={styles.jobSummary}>

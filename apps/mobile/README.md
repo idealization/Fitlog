@@ -2,7 +2,7 @@
 
 React Native Expo app foundation for Fitlog.
 
-The closet screen now supports selecting a real image, previewing its metadata, uploading the image bytes, running the analysis worker, editing the generated closet item draft, and saving it to the closet.
+The closet screen now supports selecting a real image from the gallery or capturing one with the camera, previewing its metadata, uploading the image bytes, running the analysis worker, editing the generated closet item draft, and saving it to the closet. Camera permission denial leaves the gallery flow available.
 
 ## Setup
 
