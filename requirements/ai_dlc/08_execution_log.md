@@ -108,10 +108,32 @@
 
 ## U6. Persisted Recommendation API
 
-- Status: next
+- Status: complete
 - Scope:
   - recommendation request persistence
   - outfit candidate persistence
   - feedback persistence
   - recommendation result retrieval by id
   - persisted recommendation API tests
+- Output:
+  - `services/api/app/domain/recommendations.py`
+  - `services/api/app/repositories/recommendations.py`
+  - `services/api/migrations/versions/0002_recommendations.py`
+  - `services/api/tests/test_persisted_recommendations_api.py`
+- API:
+  - `GET /api/v1/recommendations/{recommendation_id}`
+  - `POST /api/v1/recommendations/{recommendation_id}/feedback`
+  - `POST /api/v1/recommendations/{recommendation_id}/save`
+  - `POST /api/v1/recommendations/{recommendation_id}/wear`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+
+## U9. Morning Notification Scheduler
+
+- Status: next
+- Scope:
+  - notification settings model
+  - scheduled morning recommendation creation
+  - weather snapshot fallback contract
+  - push dispatch placeholder
+  - scheduler tests

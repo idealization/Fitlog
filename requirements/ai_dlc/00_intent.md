@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U5 Persistence foundation complete; next unit is U6 Persisted recommendation API
+- Construction / Execute: U6 Persisted recommendation API complete; next unit is U9 Morning notification scheduler
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -35,7 +35,7 @@ flowchart TD
     U2 --> U4["U4: Image analysis job contract (complete)"]
     U3 --> U5["U5: Persistence foundation (complete)"]
     U4 --> U5
-    U5 --> U6["U6: Persisted recommendation API"]
+    U5 --> U6["U6: Persisted recommendation API (complete)"]
     U6 --> U9["U9: Morning notification scheduler"]
     U3 --> U7["U7: Mobile app foundation"]
     U5 --> U8["U8: Recommendation UI"]
@@ -51,6 +51,7 @@ flowchart TD
 - P0 backend and mobile work should be linked back to a backlog item in `06_delivery_backlog.md`.
 - API job contracts expose machine-readable status and worker event payloads.
 - SQLite persistence preserves closet items and image analysis jobs across app instances.
+- Recommendation responses expose stable ids and can be retrieved, saved, marked worn, and given feedback.
 
 ## Critical Human Decisions Still Open
 

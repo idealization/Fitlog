@@ -13,11 +13,12 @@ This repository currently contains:
 - U3 Closet CRUD: in-memory closet item repository and CRUD API
 - U4 Image analysis job contract: upload ticket, analysis job creation, job status, and worker event payload
 - U5 Persistence foundation: SQLAlchemy models, SQLite repository backend, and Alembic initial migration
+- U6 Persisted recommendation API: recommendation history, saved/worn status, feedback, and wear logs
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U5 persistence foundation complete; U6 persisted recommendation API is next
+- Construction / Execute: U6 persisted recommendation API complete; U9 morning notification scheduler is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -51,9 +52,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is persisted recommendation API:
+The next recommended construction unit is morning notification scheduler:
 
-- recommendation request history
-- persisted outfit candidates
-- feedback persistence
-- recommendation endpoints backed by saved recommendations
+- notification settings model
+- scheduled morning recommendation job
+- weather snapshot fallback contract
+- push dispatch placeholder

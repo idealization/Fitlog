@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .base import Base
@@ -69,3 +69,44 @@ class WorkerEventRecord(Base):
     upload_id: Mapped[str] = mapped_column(String(128), nullable=False)
     storage_key: Mapped[str] = mapped_column(Text, nullable=False)
     requested_operations: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+
+
+class RecommendationRecord(Base):
+    __tablename__ = "recommendations"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    status: Mapped[str] = mapped_column(String(64), nullable=False)
+    request_payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class OutfitCandidateRecord(Base):
+    __tablename__ = "outfit_candidates"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    recommendation_id: Mapped[str] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=False)
+    rank: Mapped[int] = mapped_column(Integer, nullable=False)
+    item_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    score: Mapped[float] = mapped_column(Float, nullable=False)
+    reasons: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    items_snapshot: Mapped[list[dict[str, object]]] = mapped_column(JSON, nullable=False)
+
+
+class RecommendationFeedbackRecord(Base):
+    __tablename__ = "recommendation_feedback"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    recommendation_id: Mapped[str] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=False)
+    feedback_type: Mapped[str] = mapped_column(String(128), nullable=False)
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class WearLogRecord(Base):
+    __tablename__ = "wear_logs"
+
+    id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    recommendation_id: Mapped[str] = mapped_column(String(128), ForeignKey("recommendations.id"), nullable=False)
+    item_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

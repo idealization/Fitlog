@@ -58,3 +58,10 @@ class ImageAnalysisJobStatus(str, Enum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELED = "canceled"
+
+
+class RecommendationStatus(str, Enum):
+    CANDIDATE = "candidate"
+    SAVED = "saved"
+    WORN = "worn"
+    DISMISSED = "dismissed"

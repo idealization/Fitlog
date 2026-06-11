@@ -10,7 +10,8 @@ The current implementation contains:
 - closet item CRUD endpoints
 - upload ticket and image analysis job endpoints
 - recommendation endpoints that call the domain core
-- demo data used until persistence is implemented
+- persisted recommendation history, feedback, and wear logs
+- demo recommendation data
 - SQLite-backed persistence option
 
 ## Setup
@@ -54,11 +55,11 @@ python -m unittest discover services/api/tests
 - SQLAlchemy models and SQLite-backed repositories
 - Alembic initial migration
 - Recommendation route fallback to stored closet items
+- Persisted recommendation retrieval, save, wear, and feedback routes
 - Recommendation request/response schemas
 
 ## Not Implemented Yet
 
-- database persistence
 - authentication
 - image upload and AI job processing
 - push notification scheduler

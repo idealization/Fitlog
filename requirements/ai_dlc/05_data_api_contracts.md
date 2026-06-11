@@ -148,6 +148,43 @@ erDiagram
 | POST | /recommendations/{recommendationId}/wear | 오늘 입음 기록 |
 | POST | /recommendations/regenerate | 고정/제외 조건 기반 재추천 |
 
+### Recommendation Response
+
+```json
+{
+  "recommendationId": "uuid",
+  "status": "candidate",
+  "candidates": [
+    {
+      "itemIds": ["shirt", "slacks", "loafers"],
+      "score": 0.82,
+      "reasons": ["요청한 분위기와 맞는 태그를 반영했어요: minimal."],
+      "items": [
+        {
+          "id": "shirt",
+          "name": "White shirt",
+          "category": "top",
+          "subType": "shirt",
+          "colors": ["white"],
+          "styleTags": ["minimal"]
+        }
+      ]
+    }
+  ],
+  "createdAt": "2026-06-11T00:00:00Z",
+  "updatedAt": "2026-06-11T00:00:00Z"
+}
+```
+
+### Recommendation Feedback
+
+```json
+{
+  "feedbackType": "liked",
+  "note": "Good for work"
+}
+```
+
 ### Weather and Trends
 
 | Method | Path | Purpose |

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -11,11 +12,16 @@ from ....domain import (
     ItemStatus,
     OutfitCandidate,
     PrecipitationType,
+    RecommendationFeedback,
+    RecommendationStatus,
     Season,
     StyleRequest,
+    StoredOutfitCandidate,
+    StoredRecommendation,
     Thickness,
     TrendLevel,
     TrendSignal,
+    WearLog,
     WeatherSnapshot,
 )
 
@@ -161,11 +167,64 @@ class OutfitCandidateResponse(ApiModel):
 
 
 class RecommendationResponse(ApiModel):
+    recommendation_id: Optional[str] = Field(default=None, alias="recommendationId")
+    status: Optional[RecommendationStatus] = None
     candidates: list[OutfitCandidateResponse]
+    created_at: Optional[datetime] = Field(default=None, alias="createdAt")
+    updated_at: Optional[datetime] = Field(default=None, alias="updatedAt")
 
     @classmethod
     def from_candidates(cls, candidates: list[OutfitCandidate]) -> "RecommendationResponse":
         return cls(candidates=[to_candidate_response(candidate) for candidate in candidates])
+
+    @classmethod
+    def from_stored(cls, recommendation: StoredRecommendation) -> "RecommendationResponse":
+        return cls(
+            recommendationId=recommendation.id,
+            status=recommendation.status,
+            candidates=[to_stored_candidate_response(candidate) for candidate in recommendation.candidates],
+            createdAt=recommendation.created_at,
+            updatedAt=recommendation.updated_at,
+        )
+
+
+class RecommendationFeedbackRequest(ApiModel):
+    feedback_type: str = Field(alias="feedbackType")
+    note: Optional[str] = None
+
+
+class RecommendationFeedbackResponse(ApiModel):
+    feedback_id: str = Field(alias="feedbackId")
+    recommendation_id: str = Field(alias="recommendationId")
+    feedback_type: str = Field(alias="feedbackType")
+    note: Optional[str]
+    created_at: datetime = Field(alias="createdAt")
+
+    @classmethod
+    def from_domain(cls, feedback: RecommendationFeedback) -> "RecommendationFeedbackResponse":
+        return cls(
+            feedbackId=feedback.id,
+            recommendationId=feedback.recommendation_id,
+            feedbackType=feedback.feedback_type,
+            note=feedback.note,
+            createdAt=feedback.created_at,
+        )
+
+
+class WearLogResponse(ApiModel):
+    wear_log_id: str = Field(alias="wearLogId")
+    recommendation_id: str = Field(alias="recommendationId")
+    item_ids: list[str] = Field(alias="itemIds")
+    created_at: datetime = Field(alias="createdAt")
+
+    @classmethod
+    def from_domain(cls, wear_log: WearLog) -> "WearLogResponse":
+        return cls(
+            wearLogId=wear_log.id,
+            recommendationId=wear_log.recommendation_id,
+            itemIds=list(wear_log.item_ids),
+            createdAt=wear_log.created_at,
+        )
 
 
 def to_candidate_response(candidate: OutfitCandidate) -> OutfitCandidateResponse:
@@ -184,4 +243,13 @@ def to_candidate_response(candidate: OutfitCandidate) -> OutfitCandidateResponse
             )
             for item in candidate.items
         ],
+    )
+
+
+def to_stored_candidate_response(candidate: StoredOutfitCandidate) -> OutfitCandidateResponse:
+    return OutfitCandidateResponse(
+        itemIds=list(candidate.item_ids),
+        score=candidate.score,
+        reasons=list(candidate.reasons),
+        items=[OutfitItemResponse(**item) for item in candidate.items_snapshot],
     )

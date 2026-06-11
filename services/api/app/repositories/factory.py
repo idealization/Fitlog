@@ -4,6 +4,7 @@ from ..core.config import Settings
 from ..db.session import create_db_engine, create_session_factory, initialize_database
 from .closet_items import InMemoryClosetItemRepository, SqlAlchemyClosetItemRepository
 from .image_analysis_jobs import InMemoryImageAnalysisRepository, SqlAlchemyImageAnalysisRepository
+from .recommendations import InMemoryRecommendationRepository, SqlAlchemyRecommendationRepository
 
 
 def build_repositories(settings: Settings):
@@ -14,6 +15,7 @@ def build_repositories(settings: Settings):
         return {
             "closet_repository": SqlAlchemyClosetItemRepository(session_factory),
             "image_analysis_repository": SqlAlchemyImageAnalysisRepository(session_factory),
+            "recommendation_repository": SqlAlchemyRecommendationRepository(session_factory),
             "db_engine": engine,
             "db_session_factory": session_factory,
         }
@@ -21,7 +23,7 @@ def build_repositories(settings: Settings):
     return {
         "closet_repository": InMemoryClosetItemRepository(),
         "image_analysis_repository": InMemoryImageAnalysisRepository(),
+        "recommendation_repository": InMemoryRecommendationRepository(),
         "db_engine": None,
         "db_session_factory": None,
     }
-
