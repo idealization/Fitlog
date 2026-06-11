@@ -19,6 +19,7 @@ build/
 *.db
 *.sqlite
 *.sqlite3
+.fitlog/
 
 # OS / editor
 .DS_Store

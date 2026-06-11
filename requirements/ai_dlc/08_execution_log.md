@@ -254,3 +254,35 @@
   - This local Codex runtime still has no `npm`, `pnpm`, `yarn`, `corepack`, `tsc`, or `eslint`, so Expo typecheck/runtime launch were not executed.
 - Next:
   - U12 Image upload storage adapter
+
+## U12. Image Upload Storage Adapter
+
+- Status: complete
+- Scope:
+  - local upload storage root setting
+  - local file-backed upload storage adapter
+  - raw image bytes upload endpoint
+  - upload content type, byte size, and checksum validation
+  - upload completion response contract
+- Backlog Link:
+  - E2-1: user can upload clothing photo, backend path
+  - E2-2: analysis job can continue using the existing upload ticket
+- Output:
+  - `services/api/app/core/config.py`
+  - `services/api/app/main.py`
+  - `services/api/app/services/upload_storage.py`
+  - `services/api/app/repositories/image_analysis_jobs.py`
+  - `services/api/app/api/v1/routes/closet_items.py`
+  - `services/api/app/api/v1/schemas/image_analysis.py`
+  - `services/api/tests/test_upload_storage_api.py`
+  - `.gitignore`
+  - `requirements/ai_dlc/05_data_api_contracts.md`
+- API:
+  - `PUT /api/v1/closet-items/uploads/{upload_id}/object`
+- Verification:
+  - `.venv/bin/python -m unittest discover services/api/tests`
+  - `PYTHONPYCACHEPREFIX=/private/tmp/fitlog_pycache .venv/bin/python -m compileall services/api/app`
+  - `FITLOG_DATABASE_URL=sqlite:////private/tmp/fitlog_alembic_u12_check.db .venv/bin/alembic -c services/api/alembic.ini upgrade head`
+  - `node -e "JSON.parse(require('fs').readFileSync('apps/mobile/package.json','utf8')); JSON.parse(require('fs').readFileSync('apps/mobile/app.json','utf8')); console.log('mobile json ok')"`
+- Next:
+  - U13 Mobile photo picker upload integration

@@ -19,11 +19,12 @@ This repository currently contains:
 - U8 Recommendation UI hardening: mobile item creation, upload job entry, candidate switching, feedback, and action states
 - U10 Image analysis worker stub: queued job processing, placeholder closet item draft, and illustration storage contract
 - U11 Mobile image analysis review flow: analysis worker call, editable closet item draft, and save-to-closet handoff
+- U12 Image upload storage adapter: local raw upload endpoint, byte/checksum validation, and file-backed storage root
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U11 mobile image analysis review flow complete; U12 image upload storage adapter is next
+- Construction / Execute: U12 image upload storage adapter complete; U13 mobile photo picker upload integration is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -47,6 +48,12 @@ Run with SQLite persistence:
 FITLOG_REPOSITORY_BACKEND=sqlite FITLOG_DATABASE_URL=sqlite:///./fitlog.db uvicorn app.main:app --app-dir services/api --reload
 ```
 
+Change the local upload storage root if needed:
+
+```bash
+FITLOG_UPLOAD_STORAGE_ROOT=.fitlog/storage uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Mobile Setup
 
 The mobile app lives in `apps/mobile`. This Codex environment has `node` but no `npm`, `pnpm`, `yarn`, or `corepack`; install dependencies once a package manager is available.
@@ -67,8 +74,8 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is image upload storage adapter:
+The next recommended construction unit is mobile photo picker upload integration:
 
-- replace memory-only upload tickets with a local storage adapter
-- add an upload completion path that can be used by mobile photo selection later
-- preserve the existing image analysis job and worker contracts
+- add a mobile image picker dependency and permission flow
+- upload selected image bytes to the ticket `uploadUrl`
+- continue into the existing analysis review screen

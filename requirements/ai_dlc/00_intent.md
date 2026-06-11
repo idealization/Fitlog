@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U11 Mobile image analysis review flow complete; next unit is U12 Image upload storage adapter
+- Construction / Execute: U12 Image upload storage adapter complete; next unit is U13 Mobile photo picker upload integration
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -41,7 +41,8 @@ flowchart TD
     U7 --> U8["U8: Recommendation UI hardening (complete)"]
     U8 --> U10["U10: Image analysis worker stub (complete)"]
     U10 --> U11["U11: Mobile image analysis review flow (complete)"]
-    U11 --> U12["U12: Image upload storage adapter"]
+    U11 --> U12["U12: Image upload storage adapter (complete)"]
+    U12 --> U13["U13: Mobile photo picker upload integration"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -60,6 +61,7 @@ flowchart TD
 - Mobile recommendation and closet screens expose creation, upload-job entry, feedback, save, and wear flows.
 - Image analysis worker can process a queued job into a persisted placeholder closet item draft and illustration contract.
 - Mobile closet registration can run image analysis, show an editable draft, and save that draft as a closet item.
+- Image upload tickets expose a local PUT upload path that validates content type, byte size, and checksum before analysis.
 
 ## Critical Human Decisions Still Open
 

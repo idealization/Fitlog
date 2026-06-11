@@ -9,6 +9,7 @@ The current implementation contains:
 - health endpoint
 - closet item CRUD endpoints
 - upload ticket and image analysis job endpoints
+- local image upload storage endpoint
 - image analysis worker stub endpoint
 - recommendation endpoints that call the domain core
 - persisted recommendation history, feedback, and wear logs
@@ -38,6 +39,12 @@ To persist data locally:
 FITLOG_REPOSITORY_BACKEND=sqlite FITLOG_DATABASE_URL=sqlite:///./fitlog.db uvicorn app.main:app --app-dir services/api --reload
 ```
 
+To write uploaded image bytes somewhere other than `.fitlog/storage`:
+
+```bash
+FITLOG_UPLOAD_STORAGE_ROOT=/tmp/fitlog-uploads uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Test
 
 ```bash
@@ -54,6 +61,7 @@ python -m unittest discover services/api/tests
 - FastAPI app shell
 - Closet item CRUD routes with in-memory repository
 - Image analysis upload/job routes with in-memory repository
+- Local upload storage adapter and raw `PUT /closet-items/uploads/{uploadId}/object` completion endpoint
 - Image analysis worker stub with deterministic placeholder attributes and illustration storage contract
 - SQLAlchemy models and SQLite-backed repositories
 - Alembic initial migration
@@ -65,6 +73,6 @@ python -m unittest discover services/api/tests
 ## Not Implemented Yet
 
 - authentication
-- real object storage upload
+- cloud object storage adapter
 - real vision model and illustration provider integration
 - APNs/FCM push provider integration

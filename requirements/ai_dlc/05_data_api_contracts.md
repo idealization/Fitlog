@@ -129,6 +129,7 @@ erDiagram
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | /closet-items/uploads | 이미지 업로드 URL 발급 |
+| PUT | /closet-items/uploads/{uploadId}/object | 발급된 티켓으로 이미지 바이트 업로드 |
 | POST | /closet-items/analyze | 의류 분석 작업 생성 |
 | POST | /closet-items/jobs/process-next | 대기 중인 이미지 분석 작업 1건 처리 |
 | GET | /closet-items/jobs/{jobId} | 분석 작업 상태 조회 |
@@ -271,13 +272,28 @@ erDiagram
 ```json
 {
   "uploadId": "uuid-or-token",
-  "uploadUrl": "memory://fitlog/uploads/{uploadId}/white-shirt.jpg",
+  "uploadUrl": "/api/v1/closet-items/uploads/{uploadId}/object",
   "method": "PUT",
   "storageKey": "uploads/{uploadId}/white-shirt.jpg",
   "expiresAt": "2026-06-06T00:15:00Z",
   "headers": {
     "Content-Type": "image/jpeg"
   }
+}
+```
+
+### Image Upload Completion
+
+`uploadUrl`로 받은 경로에 `PUT` 요청을 보내 raw image bytes를 저장한다. `Content-Type`, `byteSize`, `checksumSha256`가 티켓과 다르면 요청은 거절된다.
+
+```json
+{
+  "uploadId": "uuid-or-token",
+  "uploaded": true,
+  "storageKey": "uploads/{uploadId}/white-shirt.jpg",
+  "contentType": "image/jpeg",
+  "byteSize": 12345,
+  "checksumSha256": "sha256-hex"
 }
 ```
 

@@ -39,7 +39,7 @@ class InMemoryImageAnalysisRepository:
         storage_key = f"uploads/{upload_id}/{safe_name}"
         ticket = ImageUploadTicket(
             id=upload_id,
-            upload_url=f"memory://fitlog/{storage_key}",
+            upload_url=f"/api/v1/closet-items/uploads/{upload_id}/object",
             storage_key=storage_key,
             file_name=file_name,
             content_type=content_type,
@@ -143,7 +143,7 @@ class SqlAlchemyImageAnalysisRepository:
         storage_key = f"uploads/{upload_id}/{safe_name}"
         ticket = ImageUploadTicket(
             id=upload_id,
-            upload_url=f"memory://fitlog/{storage_key}",
+            upload_url=f"/api/v1/closet-items/uploads/{upload_id}/object",
             storage_key=storage_key,
             file_name=file_name,
             content_type=content_type,

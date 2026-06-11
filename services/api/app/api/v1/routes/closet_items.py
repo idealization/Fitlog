@@ -1,4 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request, status
+import hashlib
+from typing import Optional
+
+from fastapi import APIRouter, Header, HTTPException, Request, status
 from fastapi.responses import Response
 
 from ....repositories.closet_items import ClosetItemAlreadyExistsError, ClosetItemNotFoundError, ClosetItemRepository
@@ -13,10 +16,12 @@ from ..schemas.closet_items import (
 from ..schemas.image_analysis import (
     AnalysisJobCreateRequest,
     AnalysisJobResponse,
+    UploadCompletionResponse,
     UploadUrlRequest,
     UploadUrlResponse,
     WorkerRunResponse,
     to_analysis_job_response,
+    to_upload_completion_response,
     to_upload_url_response,
 )
 
@@ -29,6 +34,10 @@ def _repository(request: Request) -> ClosetItemRepository:
 
 def _image_analysis_repository(request: Request):
     return request.app.state.image_analysis_repository
+
+
+def _upload_storage(request: Request):
+    return request.app.state.upload_storage
 
 
 @router.get("", response_model=list[ClosetItemResponse])
@@ -54,6 +63,41 @@ def create_upload_url(payload: UploadUrlRequest, request: Request) -> UploadUrlR
         checksum_sha256=payload.checksum_sha256,
     )
     return to_upload_url_response(ticket)
+
+
+@router.put("/uploads/{upload_id}/object", response_model=UploadCompletionResponse)
+async def upload_object(
+    upload_id: str,
+    request: Request,
+    content_type: Optional[str] = Header(default=None),
+) -> UploadCompletionResponse:
+    try:
+        ticket = _image_analysis_repository(request).get_upload_ticket(upload_id)
+    except ImageUploadNotFoundError as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload ticket not found.") from error
+
+    normalized_content_type = _normalize_content_type(content_type)
+    if normalized_content_type != ticket.content_type.lower():
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Upload content type does not match ticket.",
+        )
+
+    body = await request.body()
+    if not body:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload body is empty.")
+    if ticket.byte_size is not None and len(body) != ticket.byte_size:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload byte size does not match ticket.")
+    if ticket.checksum_sha256 is not None and hashlib.sha256(body).hexdigest() != ticket.checksum_sha256:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Upload checksum does not match ticket.")
+
+    stored_object = _upload_storage(request).save(
+        storage_key=ticket.storage_key,
+        content_type=ticket.content_type,
+        data=body,
+    )
+
+    return to_upload_completion_response(ticket, stored_object)
 
 
 @router.post("/analyze", response_model=AnalysisJobResponse, status_code=status.HTTP_202_ACCEPTED)
@@ -112,3 +156,7 @@ def delete_closet_item(item_id: str, request: Request) -> Response:
     except ClosetItemNotFoundError as error:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Closet item not found.") from error
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+def _normalize_content_type(content_type: Optional[str]) -> str:
+    return (content_type or "").split(";", maxsplit=1)[0].strip().lower()

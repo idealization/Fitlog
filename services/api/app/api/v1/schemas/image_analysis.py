@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ....domain import ImageAnalysisJob, ImageAnalysisJobStatus, ImageUploadTicket, WorkerEvent
 from ....services.image_analysis_worker import ImageAnalysisWorkerResult
+from ....services.upload_storage import StoredUploadObject
 
 DEFAULT_REQUESTED_OPERATIONS = ["quality_check", "attribute_extraction", "illustration"]
 
@@ -29,6 +30,15 @@ class UploadUrlResponse(ApiModel):
     storage_key: str = Field(alias="storageKey")
     expires_at: datetime = Field(alias="expiresAt")
     headers: dict[str, str]
+
+
+class UploadCompletionResponse(ApiModel):
+    upload_id: str = Field(alias="uploadId")
+    uploaded: bool
+    storage_key: str = Field(alias="storageKey")
+    content_type: str = Field(alias="contentType")
+    byte_size: int = Field(alias="byteSize")
+    checksum_sha256: str = Field(alias="checksumSha256")
 
 
 class AnalysisJobCreateRequest(ApiModel):
@@ -91,6 +101,17 @@ def to_upload_url_response(ticket: ImageUploadTicket) -> UploadUrlResponse:
         storageKey=ticket.storage_key,
         expiresAt=ticket.expires_at,
         headers=ticket.headers,
+    )
+
+
+def to_upload_completion_response(ticket: ImageUploadTicket, stored_object: StoredUploadObject) -> UploadCompletionResponse:
+    return UploadCompletionResponse(
+        uploadId=ticket.id,
+        uploaded=True,
+        storageKey=stored_object.storage_key,
+        contentType=stored_object.content_type,
+        byteSize=stored_object.byte_size,
+        checksumSha256=stored_object.checksum_sha256,
     )
 
 

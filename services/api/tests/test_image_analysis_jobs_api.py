@@ -30,7 +30,7 @@ class ImageAnalysisJobsApiTests(unittest.TestCase):
         self.assertEqual(upload["method"], "PUT")
         self.assertEqual(upload["headers"]["Content-Type"], "image/jpeg")
         self.assertTrue(upload["storageKey"].endswith("/white-shirt.jpg"))
-        self.assertTrue(upload["uploadUrl"].startswith("memory://fitlog/"))
+        self.assertEqual(upload["uploadUrl"], f"/api/v1/closet-items/uploads/{upload['uploadId']}/object")
 
         job_response = self.client.post(
             "/api/v1/closet-items/analyze",
@@ -73,4 +73,3 @@ class ImageAnalysisJobsApiTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -13,6 +13,7 @@ class Settings:
     api_v1_prefix: str = "/api/v1"
     repository_backend: str = "memory"
     database_url: str = "sqlite:///./fitlog.db"
+    upload_storage_root: str = ".fitlog/storage"
 
 
 @lru_cache
@@ -24,4 +25,5 @@ def get_settings() -> Settings:
         api_v1_prefix=os.getenv("FITLOG_API_V1_PREFIX", "/api/v1"),
         repository_backend=os.getenv("FITLOG_REPOSITORY_BACKEND", "memory"),
         database_url=os.getenv("FITLOG_DATABASE_URL", "sqlite:///./fitlog.db"),
+        upload_storage_root=os.getenv("FITLOG_UPLOAD_STORAGE_ROOT", ".fitlog/storage"),
     )
