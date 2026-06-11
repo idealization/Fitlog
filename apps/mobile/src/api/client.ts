@@ -1,9 +1,13 @@
 import type {
+  AnalysisJobResponse,
   ClosetItem,
+  ClosetItemCreateRequest,
   MorningRunResponse,
   NotificationSettings,
+  RecommendationFeedbackRequest,
   RecommendationRequest,
-  RecommendationResponse
+  RecommendationResponse,
+  UploadUrlResponse
 } from "./types";
 
 const DEFAULT_API_BASE_URL = "http://127.0.0.1:8000/api/v1";
@@ -36,6 +40,22 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 export const fitlogApi = {
   health: () => request<{ service: string; status: string; version: string }>("/health"),
   listClosetItems: () => request<ClosetItem[]>("/closet-items"),
+  createClosetItem: (payload: ClosetItemCreateRequest) =>
+    request<ClosetItem>("/closet-items", {
+      method: "POST",
+      body: payload
+    }),
+  createUploadTicket: (payload: { fileName: string; contentType: string; byteSize?: number }) =>
+    request<UploadUrlResponse>("/closet-items/uploads", {
+      method: "POST",
+      body: payload
+    }),
+  createAnalysisJob: (payload: { uploadId: string; requestedOperations?: string[] }) =>
+    request<AnalysisJobResponse>("/closet-items/analyze", {
+      method: "POST",
+      body: payload
+    }),
+  getAnalysisJob: (jobId: string) => request<AnalysisJobResponse>(`/closet-items/jobs/${jobId}`),
   createRecommendation: (payload: RecommendationRequest) =>
     request<RecommendationResponse>("/recommendations", {
       method: "POST",
@@ -52,6 +72,14 @@ export const fitlogApi = {
       `/recommendations/${recommendationId}/wear`,
       { method: "POST" }
     ),
+  addRecommendationFeedback: (recommendationId: string, payload: RecommendationFeedbackRequest) =>
+    request<{ feedbackId: string; recommendationId: string; feedbackType: string }>(
+      `/recommendations/${recommendationId}/feedback`,
+      {
+        method: "POST",
+        body: payload
+      }
+    ),
   getNotificationSettings: () => request<NotificationSettings>("/notification-settings"),
   updateNotificationSettings: (payload: Partial<NotificationSettings>) =>
     request<NotificationSettings>("/notification-settings", {
@@ -64,4 +92,3 @@ export const fitlogApi = {
       body: {}
     })
 };
-

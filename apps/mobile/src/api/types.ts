@@ -21,6 +21,22 @@ export type ClosetItem = {
   lastWornDaysAgo: number | null;
 };
 
+export type ClosetItemCreateRequest = {
+  id: string;
+  name: string;
+  category: Category;
+  subType: string;
+  seasons: Season[];
+  styleTags?: string[];
+  colors?: string[];
+  thickness?: "light" | "medium" | "heavy";
+  formality?: Formality;
+  status?: ItemStatus;
+  warmth?: number;
+  rainSafe?: boolean;
+  breathability?: number;
+};
+
 export type OutfitItem = {
   id: string;
   name: string;
@@ -43,6 +59,11 @@ export type RecommendationResponse = {
   candidates: OutfitCandidate[];
   createdAt: string | null;
   updatedAt: string | null;
+};
+
+export type RecommendationFeedbackRequest = {
+  feedbackType: "liked" | "disliked" | "too_hot" | "too_cold" | "too_flashy";
+  note?: string;
 };
 
 export type WeatherPayload = {
@@ -94,3 +115,34 @@ export type MorningRunResponse = {
   } | null;
 };
 
+export type UploadUrlResponse = {
+  uploadId: string;
+  uploadUrl: string;
+  method: "PUT";
+  storageKey: string;
+  expiresAt: string;
+  headers: Record<string, string>;
+};
+
+export type AnalysisJobResponse = {
+  jobId: string;
+  type: "closet_item_analysis";
+  status: "queued" | "running" | "needs_user_review" | "succeeded" | "failed" | "canceled";
+  progress: number;
+  uploadId: string;
+  storageKey: string;
+  originalFileName: string;
+  contentType: string;
+  requestedOperations: string[];
+  result: Record<string, unknown> | null;
+  error: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  workerEvent?: {
+    eventType: "image.uploaded";
+    jobId: string;
+    uploadId: string;
+    storageKey: string;
+    requestedOperations: string[];
+  } | null;
+};

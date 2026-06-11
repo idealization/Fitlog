@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U7 Mobile app foundation complete; next unit is U8 Recommendation UI hardening
+- Construction / Execute: U8 Recommendation UI hardening complete; next unit is U10 Image analysis worker stub
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -38,7 +38,8 @@ flowchart TD
     U5 --> U6["U6: Persisted recommendation API (complete)"]
     U6 --> U9["U9: Morning notification scheduler (complete)"]
     U9 --> U7["U7: Mobile app foundation (complete)"]
-    U7 --> U8["U8: Recommendation UI hardening"]
+    U7 --> U8["U8: Recommendation UI hardening (complete)"]
+    U8 --> U10["U10: Image analysis worker stub"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -54,6 +55,7 @@ flowchart TD
 - Recommendation responses expose stable ids and can be retrieved, saved, marked worn, and given feedback.
 - Morning scheduler creates at most one recommendation per local date and queues a placeholder push dispatch.
 - Mobile shell can call closet, recommendation, morning run, and notification settings API contracts.
+- Mobile recommendation and closet screens expose creation, upload-job entry, feedback, save, and wear flows.
 
 ## Critical Human Decisions Still Open
 

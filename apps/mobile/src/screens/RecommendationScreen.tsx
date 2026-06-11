@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
 import { fitlogApi } from "../api/client";
@@ -13,7 +13,10 @@ import { spacing } from "../theme/spacing";
 export function RecommendationScreen() {
   const [prompt, setPrompt] = useState("깔끔한 출근룩");
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
   const [recommendation, setRecommendation] = useState<RecommendationResponse | null>(null);
+  const [selectedCandidateIndex, setSelectedCandidateIndex] = useState(0);
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function requestRecommendation() {
@@ -37,6 +40,8 @@ export function RecommendationScreen() {
         useDemoCloset: true
       });
       setRecommendation(response);
+      setSelectedCandidateIndex(0);
+      setFeedbackMessage(null);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Recommendation request failed");
     } finally {
@@ -48,18 +53,50 @@ export function RecommendationScreen() {
     if (!recommendation?.recommendationId) {
       return;
     }
-    setRecommendation(await fitlogApi.saveRecommendation(recommendation.recommendationId));
+    setActionLoading(true);
+    setError(null);
+    try {
+      setRecommendation(await fitlogApi.saveRecommendation(recommendation.recommendationId));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Save failed");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function markWorn() {
     if (!recommendation?.recommendationId) {
       return;
     }
-    await fitlogApi.markRecommendationWorn(recommendation.recommendationId);
-    setRecommendation(await fitlogApi.getRecommendation(recommendation.recommendationId));
+    setActionLoading(true);
+    setError(null);
+    try {
+      await fitlogApi.markRecommendationWorn(recommendation.recommendationId);
+      setRecommendation(await fitlogApi.getRecommendation(recommendation.recommendationId));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Wear log failed");
+    } finally {
+      setActionLoading(false);
+    }
   }
 
-  const firstCandidate = recommendation?.candidates[0];
+  async function sendFeedback(feedbackType: "liked" | "disliked" | "too_hot" | "too_cold" | "too_flashy") {
+    if (!recommendation?.recommendationId) {
+      return;
+    }
+    setActionLoading(true);
+    setError(null);
+    try {
+      await fitlogApi.addRecommendationFeedback(recommendation.recommendationId, { feedbackType });
+      setFeedbackMessage("피드백이 저장되었습니다");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Feedback failed");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  const selectedCandidate = recommendation?.candidates[selectedCandidateIndex] ?? recommendation?.candidates[0];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -78,18 +115,34 @@ export function RecommendationScreen() {
         <ActionButton label="추천 받기" icon="zap" onPress={requestRecommendation} loading={loading} />
       </View>
 
-      {firstCandidate ? (
+      {recommendation?.candidates.length ? (
         <View style={styles.resultPanel}>
           <View style={styles.resultHeader}>
             <View>
               <Text style={styles.resultTitle}>추천 코디</Text>
               <Text style={styles.status}>{recommendation?.status ?? "candidate"}</Text>
             </View>
-            <Text style={styles.score}>{Math.round(firstCandidate.score * 100)}%</Text>
+            <Text style={styles.score}>{Math.round((selectedCandidate?.score ?? 0) * 100)}%</Text>
+          </View>
+
+          <View style={styles.candidateTabs}>
+            {recommendation.candidates.map((candidate, index) => (
+              <TouchableOpacity
+                key={candidate.itemIds.join("-")}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedCandidateIndex === index }}
+                onPress={() => setSelectedCandidateIndex(index)}
+                style={[styles.candidateTab, selectedCandidateIndex === index && styles.candidateTabActive]}
+              >
+                <Text style={[styles.candidateTabText, selectedCandidateIndex === index && styles.candidateTabTextActive]}>
+                  {index + 1}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           <View style={styles.itemStack}>
-            {firstCandidate.items.map((item) => (
+            {selectedCandidate?.items.map((item) => (
               <View key={item.id} style={styles.outfitItem}>
                 <Text style={styles.outfitName}>{item.name}</Text>
                 <View style={styles.pills}>
@@ -103,7 +156,7 @@ export function RecommendationScreen() {
           </View>
 
           <View style={styles.reasonBox}>
-            {firstCandidate.reasons.map((reason) => (
+            {selectedCandidate?.reasons.map((reason) => (
               <Text key={reason} style={styles.reason}>
                 {reason}
               </Text>
@@ -111,8 +164,26 @@ export function RecommendationScreen() {
           </View>
 
           <View style={styles.actions}>
-            <ActionButton label="저장" icon="bookmark" tone="secondary" onPress={saveRecommendation} />
-            <ActionButton label="오늘 입음" icon="check-circle" onPress={markWorn} />
+            <ActionButton
+              label="저장"
+              icon="bookmark"
+              tone="secondary"
+              onPress={saveRecommendation}
+              loading={actionLoading}
+            />
+            <ActionButton label="오늘 입음" icon="check-circle" onPress={markWorn} loading={actionLoading} />
+          </View>
+
+          <View style={styles.feedbackPanel}>
+            <Text style={styles.feedbackTitle}>피드백</Text>
+            <View style={styles.feedbackButtons}>
+              <FeedbackChip label="좋아요" onPress={() => sendFeedback("liked")} />
+              <FeedbackChip label="별로" onPress={() => sendFeedback("disliked")} />
+              <FeedbackChip label="더움" onPress={() => sendFeedback("too_hot")} />
+              <FeedbackChip label="추움" onPress={() => sendFeedback("too_cold")} />
+              <FeedbackChip label="튀어요" onPress={() => sendFeedback("too_flashy")} />
+            </View>
+            {feedbackMessage ? <Text style={styles.feedbackMessage}>{feedbackMessage}</Text> : null}
           </View>
         </View>
       ) : (
@@ -121,6 +192,14 @@ export function RecommendationScreen() {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </ScrollView>
+  );
+}
+
+function FeedbackChip({ label, onPress }: { label: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity accessibilityRole="button" onPress={onPress} style={styles.feedbackChip}>
+      <Text style={styles.feedbackChipText}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
@@ -190,6 +269,31 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "900"
   },
+  candidateTabs: {
+    flexDirection: "row",
+    gap: spacing.sm
+  },
+  candidateTab: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  candidateTabActive: {
+    backgroundColor: colors.green,
+    borderColor: colors.green
+  },
+  candidateTabText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  candidateTabTextActive: {
+    color: colors.surface
+  },
   itemStack: {
     gap: spacing.sm
   },
@@ -224,6 +328,38 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.sm
+  },
+  feedbackPanel: {
+    gap: spacing.sm
+  },
+  feedbackTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "900"
+  },
+  feedbackButtons: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  feedbackChip: {
+    minHeight: 34,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: "center",
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.background
+  },
+  feedbackChipText: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  feedbackMessage: {
+    color: colors.green,
+    fontSize: 12,
+    fontWeight: "800"
   },
   error: {
     color: colors.danger,

@@ -179,10 +179,30 @@
 
 ## U8. Recommendation UI Hardening
 
-- Status: next
+- Status: complete
 - Scope:
   - richer recommendation result states
   - mobile closet item creation
   - image upload entry point
   - API error recovery
   - offline/loading polish
+- Output:
+  - `apps/mobile/src/api/client.ts`
+  - `apps/mobile/src/api/types.ts`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/src/screens/RecommendationScreen.tsx`
+- Verification:
+  - mobile JSON config parsing with Node
+  - backend regression tests
+- Limitation:
+  - Expo dependency install/typecheck/runtime launch still require a package manager.
+
+## U10. Image Analysis Worker Stub
+
+- Status: next
+- Scope:
+  - job status update path
+  - deterministic placeholder analysis result
+  - worker service that processes queued image analysis jobs
+  - illustration placeholder storage contract
+  - worker service tests

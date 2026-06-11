@@ -16,11 +16,12 @@ This repository currently contains:
 - U6 Persisted recommendation API: recommendation history, saved/worn status, feedback, and wear logs
 - U9 Morning notification scheduler: notification settings, due-run scheduler, weather fallback, and push placeholder
 - U7 Mobile app foundation: Expo app shell, API client, closet, recommendation, and notification settings screens
+- U8 Recommendation UI hardening: mobile item creation, upload job entry, candidate switching, feedback, and action states
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U7 mobile app foundation complete; U8 recommendation UI hardening is next
+- Construction / Execute: U8 recommendation UI hardening complete; U10 image analysis worker stub is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -64,9 +65,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is recommendation UI hardening:
+The next recommended construction unit is image analysis worker stub:
 
-- richer recommendation states
-- closet item creation from mobile
-- image upload entry point
-- loading and offline states
+- job status update path
+- deterministic placeholder analysis result
+- illustration placeholder storage contract
+- worker service tests
