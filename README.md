@@ -24,11 +24,12 @@ This repository currently contains:
 - U14 Camera capture flow: camera permission, clothing photo capture, preview, and shared analysis handoff
 - U15 Upload readiness enforcement: persisted completion metadata and missing-object analysis rejection
 - U16 Image quality retake guidance: quality issue codes, user review status, retake actions, and explicit save override
+- U17 Image analysis provider adapter: stored image byte delivery, provider interface, and environment-based selection
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U16 image quality retake guidance complete; U17 image analysis provider adapter is next
+- Construction / Execute: U17 image analysis provider adapter complete; U18 real vision provider integration is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -58,6 +59,12 @@ Change the local upload storage root if needed:
 FITLOG_UPLOAD_STORAGE_ROOT=.fitlog/storage uvicorn app.main:app --app-dir services/api --reload
 ```
 
+Select the local image analysis provider explicitly if needed:
+
+```bash
+FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Mobile Setup
 
 The mobile app lives in `apps/mobile`. This Codex environment has `node` but no `npm`, `pnpm`, `yarn`, or `corepack`; install dependencies once a package manager is available.
@@ -78,8 +85,15 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is an image analysis provider adapter:
+The next recommended construction unit is real vision provider integration:
 
-- define a provider interface around quality and attribute extraction
-- keep the deterministic stub as the local and test implementation
-- add an environment-selected provider boundary without committing to a vendor yet
+- connect one real vision model behind the U17 provider contract
+- validate and normalize provider responses into the existing analysis schema
+- add timeout, retry, credential, and provider failure handling
+
+## When You Can Try It
+
+- Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Analysis uses deterministic demo data.
+- After mobile dependencies are installed: run the Expo app against the local API and try camera/gallery registration on a simulator or device.
+- After U18: the registration flow can analyze actual image pixels, which is the first meaningful photo-analysis MVP milestone.
+- Public beta still needs authentication, cloud storage, live weather, push delivery, deployment, and privacy hardening.

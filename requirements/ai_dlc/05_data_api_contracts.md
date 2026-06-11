@@ -340,8 +340,8 @@ erDiagram
   "status": "succeeded",
   "progress": 100,
   "result": {
-    "provider": "fitlog_stub",
-    "modelVersion": "image-analysis-worker-stub-v1",
+    "provider": "fitlog_deterministic",
+    "modelVersion": "deterministic-image-analysis-v1",
     "quality": {
       "usable": true,
       "score": 0.92,

@@ -395,3 +395,34 @@
   - Mobile TypeScript and device interaction checks still require dependency installation and an Expo runtime.
 - Next:
   - U17 Image analysis provider adapter
+
+## U17. Image Analysis Provider Adapter
+
+- Status: complete
+- Scope:
+  - provider protocol for quality and clothing attribute analysis
+  - deterministic local/test provider extracted from worker orchestration
+  - raw stored image bytes passed from upload storage to the provider
+  - environment-selected provider factory with fail-fast validation
+  - worker orchestration independent from provider-specific analysis logic
+- Backlog Link:
+  - E2-2: image analysis has a replaceable provider boundary
+  - E2-5: quality results continue through the same provider contract
+- Output:
+  - `services/api/app/services/image_analysis_provider.py`
+  - `services/api/app/services/image_analysis_worker.py`
+  - `services/api/app/core/config.py`
+  - `services/api/app/main.py`
+  - `services/api/app/api/v1/routes/closet_items.py`
+  - `services/api/tests/test_image_analysis_provider.py`
+- Configuration:
+  - `FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic`
+- Verification:
+  - provider factory selection and unsupported configuration rejection
+  - stored binary image delivery to an injected provider
+  - backend API and worker regression tests
+- Limitation:
+  - `deterministic` remains a local/test implementation and does not inspect image pixels.
+  - A real provider, credentials, response validation, timeout, and retry policy are deferred to U18.
+- Next:
+  - U18 Real vision provider integration

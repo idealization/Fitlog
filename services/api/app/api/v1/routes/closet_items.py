@@ -131,7 +131,11 @@ def create_analysis_job(payload: AnalysisJobCreateRequest, request: Request) -> 
 
 @router.post("/jobs/process-next", response_model=WorkerRunResponse)
 def process_next_analysis_job(request: Request) -> WorkerRunResponse:
-    result = process_next_image_analysis_job(_image_analysis_repository(request))
+    result = process_next_image_analysis_job(
+        _image_analysis_repository(request),
+        _upload_storage(request),
+        request.app.state.image_analysis_provider,
+    )
     return WorkerRunResponse.from_result(result)
 
 

@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from .api.v1.router import api_router
 from .core.config import Settings, get_settings
 from .repositories.factory import build_repositories
+from .services.image_analysis_provider import build_image_analysis_provider
 from .services.upload_storage import LocalUploadStorage
 
 
@@ -24,6 +25,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.db_engine = repositories["db_engine"]
     app.state.db_session_factory = repositories["db_session_factory"]
     app.state.upload_storage = LocalUploadStorage(resolved_settings.upload_storage_root)
+    app.state.image_analysis_provider = build_image_analysis_provider(resolved_settings.image_analysis_provider)
     app.include_router(api_router, prefix=resolved_settings.api_v1_prefix)
 
     @app.get("/", tags=["root"])

@@ -10,7 +10,7 @@ The current implementation contains:
 - closet item CRUD endpoints
 - upload ticket and image analysis job endpoints
 - local image upload storage endpoint
-- image analysis worker stub endpoint
+- image analysis worker and provider adapter endpoint
 - recommendation endpoints that call the domain core
 - persisted recommendation history, feedback, and wear logs
 - notification settings and morning recommendation scheduler endpoints
@@ -45,6 +45,12 @@ To write uploaded image bytes somewhere other than `.fitlog/storage`:
 FITLOG_UPLOAD_STORAGE_ROOT=/tmp/fitlog-uploads uvicorn app.main:app --app-dir services/api --reload
 ```
 
+The local provider is selected by default. Unsupported values fail during app startup:
+
+```bash
+FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Test
 
 ```bash
@@ -62,7 +68,7 @@ python -m unittest discover services/api/tests
 - Closet item CRUD routes with in-memory repository
 - Image analysis upload/job routes with in-memory repository
 - Local upload storage adapter and raw `PUT /closet-items/uploads/{uploadId}/object` completion endpoint
-- Image analysis worker stub with deterministic placeholder attributes and illustration storage contract
+- Image analysis provider contract with stored binary input and deterministic local implementation
 - SQLAlchemy models and SQLite-backed repositories
 - Alembic initial migration
 - Recommendation route fallback to stored closet items
