@@ -15,11 +15,12 @@ This repository currently contains:
 - U5 Persistence foundation: SQLAlchemy models, SQLite repository backend, and Alembic initial migration
 - U6 Persisted recommendation API: recommendation history, saved/worn status, feedback, and wear logs
 - U9 Morning notification scheduler: notification settings, due-run scheduler, weather fallback, and push placeholder
+- U7 Mobile app foundation: Expo app shell, API client, closet, recommendation, and notification settings screens
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U9 morning notification scheduler complete; U7 mobile app foundation is next
+- Construction / Execute: U7 mobile app foundation complete; U8 recommendation UI hardening is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -43,6 +44,16 @@ Run with SQLite persistence:
 FITLOG_REPOSITORY_BACKEND=sqlite FITLOG_DATABASE_URL=sqlite:///./fitlog.db uvicorn app.main:app --app-dir services/api --reload
 ```
 
+## Mobile Setup
+
+The mobile app lives in `apps/mobile`. This Codex environment has `node` but no `npm`, `pnpm`, `yarn`, or `corepack`; install dependencies once a package manager is available.
+
+```bash
+cd apps/mobile
+npm install
+npm run start
+```
+
 ## Local Verification
 
 Run the backend domain tests:
@@ -53,9 +64,9 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is mobile app foundation:
+The next recommended construction unit is recommendation UI hardening:
 
-- React Native Expo project
-- app navigation shell
-- backend API client
-- closet list and recommendation screens wired to backend contracts
+- richer recommendation states
+- closet item creation from mobile
+- image upload entry point
+- loading and offline states

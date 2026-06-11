@@ -154,7 +154,7 @@
 
 ## U7. Mobile App Foundation
 
-- Status: next
+- Status: complete
 - Scope:
   - React Native Expo project foundation
   - app navigation shell
@@ -162,3 +162,27 @@
   - closet list screen
   - recommendation result screen
   - local development configuration
+- Output:
+  - `apps/mobile/package.json`
+  - `apps/mobile/App.tsx`
+  - `apps/mobile/src/api/client.ts`
+  - `apps/mobile/src/api/types.ts`
+  - `apps/mobile/src/screens/HomeScreen.tsx`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/src/screens/RecommendationScreen.tsx`
+  - `apps/mobile/src/screens/SettingsScreen.tsx`
+- Verification:
+  - JSON config parsing with Node
+  - backend regression tests
+- Limitation:
+  - This local Codex runtime has `node` but no `npm`, `pnpm`, `yarn`, or `corepack`, so Expo dependency install and runtime launch were not executed.
+
+## U8. Recommendation UI Hardening
+
+- Status: next
+- Scope:
+  - richer recommendation result states
+  - mobile closet item creation
+  - image upload entry point
+  - API error recovery
+  - offline/loading polish

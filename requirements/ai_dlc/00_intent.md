@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U9 Morning notification scheduler complete; next unit is U7 Mobile app foundation
+- Construction / Execute: U7 Mobile app foundation complete; next unit is U8 Recommendation UI hardening
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -37,8 +37,8 @@ flowchart TD
     U4 --> U5
     U5 --> U6["U6: Persisted recommendation API (complete)"]
     U6 --> U9["U9: Morning notification scheduler (complete)"]
-    U9 --> U7["U7: Mobile app foundation"]
-    U5 --> U8["U8: Recommendation UI"]
+    U9 --> U7["U7: Mobile app foundation (complete)"]
+    U7 --> U8["U8: Recommendation UI hardening"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -53,6 +53,7 @@ flowchart TD
 - SQLite persistence preserves closet items and image analysis jobs across app instances.
 - Recommendation responses expose stable ids and can be retrieved, saved, marked worn, and given feedback.
 - Morning scheduler creates at most one recommendation per local date and queues a placeholder push dispatch.
+- Mobile shell can call closet, recommendation, morning run, and notification settings API contracts.
 
 ## Critical Human Decisions Still Open
 

@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Fitlog",
+    "slug": "fitlog",
+    "scheme": "fitlog",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#F7F4EF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fitlog.app"
+    },
+    "android": {
+      "package": "com.fitlog.app"
+    },
+    "extra": {
+      "apiBaseUrl": "http://127.0.0.1:8000/api/v1"
+    }
+  }
+}
