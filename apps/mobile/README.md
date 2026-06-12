@@ -19,7 +19,15 @@ Open the browser build directly:
 EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1 npm run web -- --port 8081
 ```
 
-Then visit `http://127.0.0.1:8081`. The dependency graph is pinned in `package-lock.json`. Expo SDK compatibility and iOS, Android, and web exports are verified.
+Then visit `http://127.0.0.1:8081`. The dependency graph is pinned in `package-lock.json`. Expo SDK 56 compatibility and iOS, Android, and web exports are verified.
+
+For an iPhone or Android device on the same Wi-Fi, stop the existing local servers and run:
+
+```bash
+./scripts/start_device_dev.sh
+```
+
+Open the printed `exp://` URL with Expo Go. The script binds the API to the local network and injects the matching API URL into the Expo bundle.
 
 Configure the backend URL:
 

@@ -33,6 +33,17 @@ class ApiFoundationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["access-control-allow-origin"], "http://127.0.0.1:8081")
 
+    def test_runtime_readiness_discloses_safe_provider_status(self):
+        response = self.client.get("/api/v1/runtime-readiness")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["apiStatus"], "ok")
+        self.assertEqual(body["imageAnalysis"]["provider"], "deterministic")
+        self.assertTrue(body["imageAnalysis"]["configured"])
+        self.assertFalse(body["imageAnalysis"]["live"])
+        self.assertNotIn("apiKey", body["imageAnalysis"])
+
     def test_demo_recommendations_return_candidates(self):
         response = self.client.get("/api/v1/recommendations/demo")
 

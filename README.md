@@ -28,6 +28,7 @@ This repository currently contains:
 - U18 Real vision provider integration: OpenAI vision, strict schema validation, retries, and provider failure handling
 - U19 Mobile live vision readiness: HEIC normalization, dependency lockfile, TypeScript checks, and iOS/Android bundles
 - U20 Runnable local app acceptance: Expo Web, local CORS, and browser-verified core flows
+- U21 in progress: SDK 56 upgrade, runtime readiness, real PNG pipeline acceptance, and device launcher
 
 ## AI-DLC Progress
 
@@ -97,6 +98,20 @@ EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1 npm run web -- --port 8081
 
 Open `http://127.0.0.1:8081`.
 
+Run on a physical device with Expo Go:
+
+```bash
+./scripts/start_device_dev.sh
+```
+
+Run the U21 image-pipeline and readiness check while the API is running:
+
+```bash
+.venv/bin/python scripts/verify_u21.py
+```
+
+Add `--require-device --require-live-provider` for the final U21 gate.
+
 ## Local Verification
 
 Run the backend domain tests:
@@ -118,6 +133,6 @@ U21 is device and live provider acceptance:
 - Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Deterministic mode works without credentials.
 - Now with an API key: select the `openai` provider to analyze actual JPEG, PNG, WebP, or GIF image pixels.
 - Now: use the running Fitlog web MVP at `http://127.0.0.1:8081`; recommendation, closet registration, feedback, and notification settings are connected to the local API.
-- Now: mobile dependencies install cleanly, TypeScript passes, and iOS, Android, and web bundles build.
+- Now: mobile dependencies are aligned to Expo SDK 56, TypeScript passes, and iOS, Android, and web bundles build.
 - After U21: the camera-to-closet path becomes the first fully verified hands-on mobile milestone with a live provider request.
 - Public beta still needs authentication, cloud storage, live weather, push delivery, deployment, and privacy hardening.

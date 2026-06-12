@@ -535,3 +535,34 @@
   - Physical-device camera acceptance and a paid OpenAI request require a device and `OPENAI_API_KEY`; these move to U21.
 - Next:
   - U21 Device and live provider acceptance
+
+## U21. Device and Live Provider Acceptance
+
+- Status: in progress
+- Completed Scope:
+  - Expo SDK 52 to SDK 56 upgrade for current Expo Go compatibility
+  - React 19.2, React Native 0.85, React Native Web 0.21, and TypeScript 6 alignment
+  - legacy Expo FileSystem upload adapter retained through the SDK 56 compatibility import
+  - safe runtime-readiness API for provider, model, environment, and repository mode
+  - in-app service status panel showing API and real-versus-demo analysis mode
+  - generated white Oxford shirt acceptance fixture
+  - automated upload, storage, analysis-job, worker, and result verification
+  - LAN launcher for Expo Go with a device-reachable API base URL
+- Verification:
+  - 42 backend tests
+  - mobile TypeScript check
+  - Expo SDK dependency compatibility check
+  - successful web, iOS, and Android SDK 56 exports
+  - real PNG upload pipeline succeeded with `fitlog_deterministic`
+  - desktop browser service-status acceptance
+- Current Gate Result:
+  - API: pass
+  - photo pipeline: pass
+  - live OpenAI provider: blocked because `OPENAI_API_KEY` is not configured
+  - iOS/Android device: blocked because no simulator, emulator, or connected device is available
+  - dependency audit: 10 moderate transitive findings remain after the SDK 56 upgrade
+- Completion Command:
+  - `.venv/bin/python scripts/verify_u21.py --require-device --require-live-provider`
+- Remaining:
+  - connect an iOS or Android device through Expo Go and complete one camera capture
+  - configure `OPENAI_API_KEY`, restart with `FITLOG_IMAGE_ANALYSIS_PROVIDER=openai`, and rerun the completion command

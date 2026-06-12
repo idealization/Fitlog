@@ -11,22 +11,23 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@expo/metro-runtime": "~4.0.1",
-    "@expo/vector-icons": "~14.0.4",
-    "expo": "~52.0.0",
-    "expo-asset": "~11.0.5",
-    "expo-file-system": "~18.0.12",
-    "expo-font": "~13.0.4",
-    "expo-image-manipulator": "~13.0.6",
-    "expo-image-picker": "~16.0.6",
-    "expo-status-bar": "~2.0.0",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-native": "0.76.9",
-    "react-native-web": "~0.19.13"
+    "@expo/env": "~2.3.0",
+    "@expo/metro-runtime": "~56.0.15",
+    "@expo/vector-icons": "^15.0.2",
+    "expo": "^56.0.11",
+    "expo-asset": "~56.0.17",
+    "expo-file-system": "~56.0.8",
+    "expo-font": "~56.0.6",
+    "expo-image-manipulator": "~56.0.18",
+    "expo-image-picker": "~56.0.17",
+    "expo-status-bar": "~56.0.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
-    "@types/react": "~18.3.12",
-    "typescript": "~5.3.3"
+    "@types/react": "~19.2.14",
+    "typescript": "~6.0.3"
   }
 }

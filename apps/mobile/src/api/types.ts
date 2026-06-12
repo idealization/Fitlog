@@ -99,6 +99,18 @@ export type NotificationSettings = {
   updatedAt: string;
 };
 
+export type RuntimeReadiness = {
+  apiStatus: "ok";
+  environment: string;
+  repositoryBackend: string;
+  imageAnalysis: {
+    provider: string;
+    model: string;
+    configured: boolean;
+    live: boolean;
+  };
+};
+
 export type MorningRunResponse = {
   created: boolean;
   reason: string;

@@ -2,14 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-import { fitlogApi } from "../api/client";
-import type { NotificationSettings } from "../api/types";
+import { API_BASE_URL, fitlogApi } from "../api/client";
+import type { NotificationSettings, RuntimeReadiness } from "../api/types";
 import { ActionButton } from "../components/ActionButton";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 
 export function SettingsScreen() {
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
+  const [readiness, setReadiness] = useState<RuntimeReadiness | null>(null);
   const [weekdayTime, setWeekdayTime] = useState("08:00");
   const [weekendTime, setWeekendTime] = useState("09:00");
   const [timezone, setTimezone] = useState("Asia/Seoul");
@@ -20,8 +21,12 @@ export function SettingsScreen() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fitlogApi.getNotificationSettings();
+      const [response, runtimeReadiness] = await Promise.all([
+        fitlogApi.getNotificationSettings(),
+        fitlogApi.runtimeReadiness()
+      ]);
       setSettings(response);
+      setReadiness(runtimeReadiness);
       setWeekdayTime(response.weekdayNotificationTime);
       setWeekendTime(response.weekendNotificationTime ?? "09:00");
       setTimezone(response.timezone);
@@ -90,8 +95,29 @@ export function SettingsScreen() {
 
         <ActionButton label="저장" icon="save" onPress={save} loading={loading} />
       </View>
+      <View style={styles.panel}>
+        <View style={styles.titleRow}>
+          <Feather name="activity" size={20} color={colors.green} />
+          <Text style={styles.title}>서비스 상태</Text>
+        </View>
+        <StatusRow label="API" value={readiness?.apiStatus === "ok" ? "연결됨" : "확인 중"} />
+        <StatusRow label="분석 모드" value={readiness?.imageAnalysis.live ? "OpenAI 실분석" : "로컬 데모"} />
+        <StatusRow label="분석 모델" value={readiness?.imageAnalysis.model ?? "-"} />
+        <StatusRow label="데이터" value={readiness?.repositoryBackend ?? "-"} />
+        <Text style={styles.endpoint} numberOfLines={2}>{API_BASE_URL}</Text>
+        <ActionButton label="연결 다시 확인" icon="refresh-cw" onPress={load} loading={loading} tone="secondary" />
+      </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </ScrollView>
+  );
+}
+
+function StatusRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.statusRow}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.statusValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -160,6 +186,27 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginTop: 2
   },
+  statusRow: {
+    minHeight: 36,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
+    borderBottomColor: colors.border,
+    borderBottomWidth: 1
+  },
+  statusValue: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "800",
+    textAlign: "right",
+    flexShrink: 1
+  },
+  endpoint: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 18
+  },
   input: {
     minHeight: 44,
     borderRadius: 8,
@@ -175,4 +222,3 @@ const styles = StyleSheet.create({
     fontWeight: "700"
   }
 });
-

@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U20 Runnable local app acceptance complete; next unit is U21 Device and live provider acceptance
+- Construction / Execute: U21 Device and live provider acceptance in progress; local photo pipeline accepted, device and live provider pending
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -78,6 +78,8 @@ flowchart TD
 - OpenAI vision requests use stored image pixels, strict structured output validation, bounded retries, and persisted provider failure states.
 - Mobile image inputs normalize unsupported formats to JPEG and produce valid iOS and Android Expo bundles.
 - Expo Web runs against the local FastAPI service and supports recommendation, closet, and notification-setting acceptance flows.
+- Runtime readiness reports the active analysis provider without exposing credentials.
+- The U21 acceptance command exercises a real PNG upload through analysis and detects connected device and live-provider readiness.
 
 ## Critical Human Decisions Still Open
 

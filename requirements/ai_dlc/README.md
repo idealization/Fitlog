@@ -31,11 +31,11 @@
 - 비동기 처리: Redis Queue 또는 Celery 계열 워커
 - AI: MVP에서는 외부 AI API를 활용하고, 사용자 피드백/성능 데이터를 쌓은 뒤 자체 모델 여부를 재검토
 - 추천: 규칙 기반 필터와 AI 랭킹을 혼합
-- 현재 실행 단위: U20 Runnable local app acceptance 완료
+- 현재 실행 단위: U21 Device and live provider acceptance 진행 중
 
 ## 다음 작업
 
-1. `http://127.0.0.1:8081`에서 로컬 MVP를 직접 사용해 본다.
-2. U21에서 iOS 또는 Android 실기기 카메라 흐름을 검증한다.
+1. `./scripts/start_device_dev.sh`로 Expo Go 실기기 흐름을 연다.
+2. iOS 또는 Android 기기에서 카메라 촬영과 옷장 저장을 검증한다.
 3. `OPENAI_API_KEY`를 설정하고 실제 이미지 분석 요청 1건을 승인한다.
-4. 인증, 클라우드 저장소, 실시간 날씨, 푸시 전달을 순서대로 운영 환경에 연결한다.
+4. U21 완료 명령의 device와 live-provider 게이트를 모두 통과시킨다.

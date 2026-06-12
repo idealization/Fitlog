@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { Platform } from "react-native";
 
 import type {
@@ -10,6 +10,7 @@ import type {
   RecommendationFeedbackRequest,
   RecommendationRequest,
   RecommendationResponse,
+  RuntimeReadiness,
   UploadCompletionResponse,
   UploadUrlResponse,
   WorkerRunResponse
@@ -85,6 +86,7 @@ function resolveUploadUrl(uploadUrl: string) {
 
 export const fitlogApi = {
   health: () => request<{ service: string; status: string; version: string }>("/health"),
+  runtimeReadiness: () => request<RuntimeReadiness>("/runtime-readiness"),
   listClosetItems: () => request<ClosetItem[]>("/closet-items"),
   createClosetItem: (payload: ClosetItemCreateRequest) =>
     request<ClosetItem>("/closet-items", {
