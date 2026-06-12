@@ -1,6 +1,14 @@
 from __future__ import annotations
 
-from typing import Protocol
+import base64
+import json
+import socket
+import time
+from typing import Callable, Literal, Protocol
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from ..domain import ImageAnalysisJob
 
@@ -12,6 +20,263 @@ class ImageAnalysisProvider(Protocol):
         ...
 
 
+class ImageAnalysisProviderError(RuntimeError):
+    pass
+
+
+class OpenAIProviderConfigurationError(ImageAnalysisProviderError):
+    pass
+
+
+class OpenAIResponsesError(ImageAnalysisProviderError):
+    def __init__(self, message: str, *, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
+
+    @property
+    def retryable(self) -> bool:
+        return self.status_code is None or self.status_code in {408, 409, 429} or (self.status_code or 0) >= 500
+
+
+class OpenAIResponsesClient(Protocol):
+    def create_response(self, payload: dict[str, object], timeout_seconds: float) -> dict[str, object]:
+        ...
+
+
+class UrlLibOpenAIResponsesClient:
+    def __init__(self, api_key: str, base_url: str):
+        self._api_key = api_key
+        self._responses_url = f"{base_url.rstrip('/')}/responses"
+
+    def create_response(self, payload: dict[str, object], timeout_seconds: float) -> dict[str, object]:
+        request = Request(
+            self._responses_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self._api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        try:
+            with urlopen(request, timeout=timeout_seconds) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except HTTPError as error:
+            detail = error.read().decode("utf-8", errors="replace")[:500]
+            raise OpenAIResponsesError(
+                f"OpenAI Responses API returned HTTP {error.code}: {detail}",
+                status_code=error.code,
+            ) from error
+        except (URLError, TimeoutError, socket.timeout) as error:
+            raise OpenAIResponsesError(f"OpenAI Responses API request failed: {error}") from error
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise OpenAIResponsesError("OpenAI Responses API returned invalid JSON.") from error
+
+
+class StrictOutputModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+QualityIssue = Literal[
+    "blur_detected",
+    "low_light",
+    "low_resolution",
+    "item_occluded",
+    "multiple_items",
+    "not_clothing",
+    "poor_framing",
+]
+CategoryValue = Literal["top", "bottom", "outerwear", "dress", "shoes", "bag", "accessory"]
+SeasonValue = Literal["spring", "summer", "fall", "winter", "all"]
+ThicknessValue = Literal["light", "medium", "heavy"]
+FormalityValue = Literal["casual", "business_casual", "formal"]
+
+
+class OpenAIQuality(StrictOutputModel):
+    usable: bool
+    score: float = Field(ge=0, le=1)
+    issues: list[QualityIssue]
+
+
+class OpenAIColor(StrictOutputModel):
+    name: str
+    hex: str
+    role: Literal["primary", "secondary"]
+
+
+class OpenAIDetectedAttributes(StrictOutputModel):
+    category: CategoryValue
+    sub_type: str = Field(alias="subType")
+    colors: list[OpenAIColor]
+    pattern: str
+    material_guess: list[str] = Field(alias="materialGuess")
+    thickness: ThicknessValue
+    seasons: list[SeasonValue]
+    fit: str
+    formality: FormalityValue
+    style_tags: list[str] = Field(alias="styleTags")
+
+
+class OpenAIClosetItemDraft(StrictOutputModel):
+    name: str
+    category: CategoryValue
+    sub_type: str = Field(alias="subType")
+    seasons: list[SeasonValue]
+    style_tags: list[str] = Field(alias="styleTags")
+    colors: list[str]
+    thickness: ThicknessValue
+    formality: FormalityValue
+    status: Literal["available"]
+    warmth: int = Field(ge=1, le=10)
+    rain_safe: bool = Field(alias="rainSafe")
+    breathability: int = Field(ge=1, le=10)
+
+
+class OpenAIConfidence(StrictOutputModel):
+    category: float = Field(ge=0, le=1)
+    colors: float = Field(ge=0, le=1)
+    style_tags: float = Field(alias="styleTags", ge=0, le=1)
+
+
+class OpenAIAnalysisOutput(StrictOutputModel):
+    quality: OpenAIQuality
+    detected_attributes: OpenAIDetectedAttributes = Field(alias="detectedAttributes")
+    closet_item_draft: OpenAIClosetItemDraft = Field(alias="closetItemDraft")
+    confidence: OpenAIConfidence
+
+
+class OpenAIImageAnalysisProvider:
+    name = "openai"
+    supported_content_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str,
+        base_url: str,
+        timeout_seconds: float,
+        max_retries: int,
+        client: OpenAIResponsesClient | None = None,
+        sleep: Callable[[float], None] = time.sleep,
+    ):
+        if not api_key.strip():
+            raise OpenAIProviderConfigurationError("OPENAI_API_KEY is required for the OpenAI image analysis provider.")
+        if timeout_seconds <= 0:
+            raise OpenAIProviderConfigurationError("Image analysis timeout must be greater than zero.")
+        if max_retries < 0:
+            raise OpenAIProviderConfigurationError("Image analysis max retries cannot be negative.")
+        self._model = model
+        self._timeout_seconds = timeout_seconds
+        self._max_retries = max_retries
+        self._client = client or UrlLibOpenAIResponsesClient(api_key, base_url)
+        self._sleep = sleep
+
+    def analyze(self, job: ImageAnalysisJob, image_bytes: bytes) -> dict[str, object]:
+        if not image_bytes:
+            raise ImageAnalysisProviderError("Uploaded image object is empty.")
+        if job.content_type not in self.supported_content_types:
+            raise ImageAnalysisProviderError(f"Unsupported image content type for OpenAI vision: {job.content_type}")
+
+        response = self._create_response(self._build_request(job, image_bytes))
+        output_text = _extract_response_output_text(response)
+        try:
+            analysis = OpenAIAnalysisOutput.model_validate_json(output_text)
+        except ValidationError as error:
+            raise ImageAnalysisProviderError(
+                "OpenAI vision response did not match the Fitlog analysis schema."
+            ) from error
+
+        core = analysis.model_dump(by_alias=True)
+        confidence = dict(core["confidence"])
+        confidence["illustration"] = 0.0
+        return {
+            "provider": self.name,
+            "modelVersion": self._model,
+            "source": {
+                "jobId": job.id,
+                "uploadId": job.upload_id,
+                "storageKey": job.storage_key,
+                "contentType": job.content_type,
+                "requestedOperations": list(job.requested_operations),
+            },
+            "quality": core["quality"],
+            "detectedAttributes": core["detectedAttributes"],
+            "closetItemDraft": core["closetItemDraft"],
+            "illustration": {
+                "status": "placeholder",
+                "storageKey": f"illustrations/{job.id}.png",
+                "style": "flat-fashion-illustration",
+                "background": "transparent",
+            },
+            "confidence": confidence,
+            "events": ["closet_item.analyzed", "closet_item.illustration.placeholder_created"],
+        }
+
+    def _create_response(self, payload: dict[str, object]) -> dict[str, object]:
+        for attempt in range(self._max_retries + 1):
+            try:
+                return self._client.create_response(payload, self._timeout_seconds)
+            except OpenAIResponsesError as error:
+                if not error.retryable or attempt >= self._max_retries:
+                    raise
+                self._sleep(0.25 * (2**attempt))
+        raise AssertionError("OpenAI retry loop exited unexpectedly.")
+
+    def _build_request(self, job: ImageAnalysisJob, image_bytes: bytes) -> dict[str, object]:
+        image_data = base64.b64encode(image_bytes).decode("ascii")
+        return {
+            "model": self._model,
+            "store": False,
+            "input": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": _OPENAI_VISION_PROMPT},
+                        {
+                            "type": "input_image",
+                            "image_url": f"data:{job.content_type};base64,{image_data}",
+                            "detail": "high",
+                        },
+                    ],
+                }
+            ],
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": "fitlog_clothing_analysis",
+                    "strict": True,
+                    "schema": OpenAIAnalysisOutput.model_json_schema(by_alias=True),
+                }
+            },
+            "max_output_tokens": 1800,
+        }
+
+
+_OPENAI_VISION_PROMPT = """Analyze the single clothing item in this image for a digital wardrobe.
+Evaluate image quality first. Use only the allowed issue codes.
+Extract conservative visual attributes without guessing a brand.
+Use English lowercase tokens for categorical values and style tags. Create a short user-facing item name.
+Warmth and breathability must be integers from 1 to 10. Confidence values must be between 0 and 1.
+If the image is unusable, still return the best available draft and list every relevant quality issue."""
+
+
+def _extract_response_output_text(response: dict[str, object]) -> str:
+    output = response.get("output")
+    if not isinstance(output, list):
+        raise ImageAnalysisProviderError("OpenAI vision response did not include output items.")
+    for item in output:
+        if not isinstance(item, dict) or item.get("type") != "message":
+            continue
+        content = item.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "output_text" and isinstance(part.get("text"), str):
+                return part["text"]
+    raise ImageAnalysisProviderError("OpenAI vision response did not include structured output text.")
+
+
 class DeterministicImageAnalysisProvider:
     name = "deterministic"
 
@@ -21,10 +286,26 @@ class DeterministicImageAnalysisProvider:
         return build_deterministic_analysis_result(job)
 
 
-def build_image_analysis_provider(provider_name: str) -> ImageAnalysisProvider:
+def build_image_analysis_provider(
+    provider_name: str,
+    *,
+    openai_api_key: str | None = None,
+    openai_model: str = "gpt-5.4-mini",
+    openai_base_url: str = "https://api.openai.com/v1",
+    timeout_seconds: float = 30.0,
+    max_retries: int = 2,
+) -> ImageAnalysisProvider:
     normalized_name = provider_name.strip().lower()
     if normalized_name == DeterministicImageAnalysisProvider.name:
         return DeterministicImageAnalysisProvider()
+    if normalized_name == OpenAIImageAnalysisProvider.name:
+        return OpenAIImageAnalysisProvider(
+            api_key=openai_api_key or "",
+            model=openai_model,
+            base_url=openai_base_url,
+            timeout_seconds=timeout_seconds,
+            max_retries=max_retries,
+        )
     raise ValueError(f"Unsupported image analysis provider: {provider_name}")
 
 

@@ -25,11 +25,13 @@ This repository currently contains:
 - U15 Upload readiness enforcement: persisted completion metadata and missing-object analysis rejection
 - U16 Image quality retake guidance: quality issue codes, user review status, retake actions, and explicit save override
 - U17 Image analysis provider adapter: stored image byte delivery, provider interface, and environment-based selection
+- U18 Real vision provider integration: OpenAI vision, strict schema validation, retries, and provider failure handling
+- U19 Mobile live vision readiness: HEIC normalization, dependency lockfile, TypeScript checks, and iOS/Android bundles
 
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U17 image analysis provider adapter complete; U18 real vision provider integration is next
+- Construction / Execute: U19 mobile live vision readiness complete; U20 device and live provider acceptance is next
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -65,13 +67,23 @@ Select the local image analysis provider explicitly if needed:
 FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic uvicorn app.main:app --app-dir services/api --reload
 ```
 
+Run with real OpenAI vision analysis:
+
+```bash
+export FITLOG_IMAGE_ANALYSIS_PROVIDER=openai
+export OPENAI_API_KEY=your-api-key
+export FITLOG_OPENAI_VISION_MODEL=gpt-5.4-mini
+uvicorn app.main:app --app-dir services/api --reload
+```
+
 ## Mobile Setup
 
-The mobile app lives in `apps/mobile`. This Codex environment has `node` but no `npm`, `pnpm`, `yarn`, or `corepack`; install dependencies once a package manager is available.
+The mobile app lives in `apps/mobile`. Dependencies are pinned in `package-lock.json`.
 
 ```bash
 cd apps/mobile
 npm install
+npm run typecheck
 npm run start
 ```
 
@@ -85,15 +97,16 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-The next recommended construction unit is real vision provider integration:
+The next recommended construction unit is device and live provider acceptance:
 
-- connect one real vision model behind the U17 provider contract
-- validate and normalize provider responses into the existing analysis schema
-- add timeout, retry, credential, and provider failure handling
+- run the camera flow on an iOS or Android device
+- execute one real OpenAI analysis with a configured API key
+- verify capture, normalization, upload, review, and closet save as one acceptance flow
 
 ## When You Can Try It
 
-- Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Analysis uses deterministic demo data.
-- After mobile dependencies are installed: run the Expo app against the local API and try camera/gallery registration on a simulator or device.
-- After U18: the registration flow can analyze actual image pixels, which is the first meaningful photo-analysis MVP milestone.
+- Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Deterministic mode works without credentials.
+- Now with an API key: select the `openai` provider to analyze actual JPEG, PNG, WebP, or GIF image pixels.
+- Now: mobile dependencies install cleanly, TypeScript passes, and both iOS and Android bundles build.
+- After U20: the camera-to-closet path becomes the first fully verified hands-on mobile MVP milestone.
 - Public beta still needs authentication, cloud storage, live weather, push delivery, deployment, and privacy hardening.

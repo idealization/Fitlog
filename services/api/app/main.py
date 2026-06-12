@@ -25,7 +25,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.db_engine = repositories["db_engine"]
     app.state.db_session_factory = repositories["db_session_factory"]
     app.state.upload_storage = LocalUploadStorage(resolved_settings.upload_storage_root)
-    app.state.image_analysis_provider = build_image_analysis_provider(resolved_settings.image_analysis_provider)
+    app.state.image_analysis_provider = build_image_analysis_provider(
+        resolved_settings.image_analysis_provider,
+        openai_api_key=resolved_settings.openai_api_key,
+        openai_model=resolved_settings.openai_vision_model,
+        openai_base_url=resolved_settings.openai_base_url,
+        timeout_seconds=resolved_settings.image_analysis_timeout_seconds,
+        max_retries=resolved_settings.image_analysis_max_retries,
+    )
     app.include_router(api_router, prefix=resolved_settings.api_v1_prefix)
 
     @app.get("/", tags=["root"])

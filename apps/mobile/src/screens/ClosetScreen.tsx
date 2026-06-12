@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 
 import { fitlogApi } from "../api/client";
@@ -56,6 +57,7 @@ export function ClosetScreen() {
   const [creating, setCreating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [capturing, setCapturing] = useState(false);
+  const [normalizingImage, setNormalizingImage] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [newItemName, setNewItemName] = useState("White shirt");
   const [newItemCategory, setNewItemCategory] = useState<Category>("top");
@@ -178,7 +180,7 @@ export function ClosetScreen() {
         return;
       }
 
-      acceptImage(result.assets[0], "library");
+      await acceptImage(result.assets[0], "library");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "사진을 불러오지 못했어요.");
     }
@@ -210,7 +212,7 @@ export function ClosetScreen() {
         return;
       }
 
-      acceptImage(result.assets[0], "camera");
+      await acceptImage(result.assets[0], "camera");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "사진 촬영을 시작하지 못했어요.");
     } finally {
@@ -218,13 +220,24 @@ export function ClosetScreen() {
     }
   }
 
-  function acceptImage(asset: ImagePicker.ImagePickerAsset, source: ImageSource) {
-    setSelectedImage(asset);
-    setSelectedImageSource(source);
-    setAnalysisJob(null);
-    setWorkerRun(null);
-    setDraft(null);
-    setNotice(source === "camera" ? "사진을 촬영했어요. AI 분석을 시작하세요." : "사진을 선택했어요. AI 분석을 시작하세요.");
+  async function acceptImage(asset: ImagePicker.ImagePickerAsset, source: ImageSource) {
+    setNormalizingImage(true);
+    setNotice("분석할 수 있는 이미지 형식으로 준비하고 있어요.");
+    try {
+      const normalizedAsset = await normalizeImageForAnalysis(asset);
+      setSelectedImage(normalizedAsset);
+      setSelectedImageSource(source);
+      setAnalysisJob(null);
+      setWorkerRun(null);
+      setDraft(null);
+      setNotice(
+        source === "camera"
+          ? "사진을 촬영했어요. AI 분석을 시작하세요."
+          : "사진을 선택했어요. AI 분석을 시작하세요."
+      );
+    } finally {
+      setNormalizingImage(false);
+    }
   }
 
   async function saveAnalyzedDraft(allowLowQuality = false) {
@@ -324,7 +337,7 @@ export function ClosetScreen() {
                 icon="image"
                 tone="secondary"
                 onPress={pickImage}
-                disabled={analyzing || capturing}
+                disabled={analyzing || capturing || normalizingImage}
                 style={styles.flexAction}
               />
               <ActionButton
@@ -333,7 +346,7 @@ export function ClosetScreen() {
                 tone="secondary"
                 onPress={captureImage}
                 loading={capturing}
-                disabled={analyzing}
+                disabled={analyzing || normalizingImage}
                 style={styles.flexAction}
               />
             </View>
@@ -342,7 +355,7 @@ export function ClosetScreen() {
               icon="upload"
               onPress={startAnalysisJob}
               loading={analyzing}
-              disabled={!selectedImage || capturing}
+              disabled={!selectedImage || capturing || normalizingImage}
             />
             <ActionButton
               label="직접 입력으로 저장"
@@ -350,7 +363,7 @@ export function ClosetScreen() {
               tone="secondary"
               onPress={createItem}
               loading={creating}
-              disabled={analyzing || capturing}
+              disabled={analyzing || capturing || normalizingImage}
             />
             {analysisJob ? (
               <View style={styles.jobSummary}>
@@ -502,7 +515,7 @@ export function ClosetScreen() {
                       icon="camera"
                       onPress={captureImage}
                       loading={capturing}
-                      disabled={savingDraft}
+                      disabled={savingDraft || normalizingImage}
                       style={styles.flexAction}
                     />
                     <ActionButton
@@ -510,7 +523,7 @@ export function ClosetScreen() {
                       icon="image"
                       tone="secondary"
                       onPress={pickImage}
-                      disabled={savingDraft || capturing}
+                      disabled={savingDraft || capturing || normalizingImage}
                       style={styles.flexAction}
                     />
                   </View>
@@ -616,6 +629,14 @@ function qualityIssueLabel(issue: string) {
       return "조명이 어두워 옷의 색과 디테일이 잘 보이지 않아요.";
     case "low_resolution":
       return "사진 해상도가 낮아 옷의 특징을 확인하기 어려워요.";
+    case "item_occluded":
+      return "옷 일부가 가려져 있어 전체 형태를 확인하기 어려워요.";
+    case "multiple_items":
+      return "한 번에 옷 한 벌만 보이도록 촬영해주세요.";
+    case "not_clothing":
+      return "의류가 명확하게 보이는 사진을 선택해주세요.";
+    case "poor_framing":
+      return "옷 전체가 화면 안에 들어오도록 다시 촬영해주세요.";
     default:
       return "옷 전체가 잘 보이도록 밝은 곳에서 다시 촬영해주세요.";
   }
@@ -704,6 +725,41 @@ function inferImageContentType(fileName: string) {
     return "image/heic";
   }
   return "image/jpeg";
+}
+
+async function normalizeImageForAnalysis(
+  asset: ImagePicker.ImagePickerAsset
+): Promise<ImagePicker.ImagePickerAsset> {
+  const contentType = asset.mimeType ?? inferImageContentType(asset.fileName ?? "");
+  if (isVisionSupportedContentType(contentType)) {
+    return asset;
+  }
+
+  const context = ImageManipulator.ImageManipulator.manipulate(asset.uri);
+  const image = await context.renderAsync();
+  const normalized = await image.saveAsync({
+    compress: 0.9,
+    format: ImageManipulator.SaveFormat.JPEG
+  });
+
+  return {
+    ...asset,
+    uri: normalized.uri,
+    width: normalized.width,
+    height: normalized.height,
+    fileName: replaceFileExtension(asset.fileName ?? "fitlog-photo", "jpg"),
+    fileSize: undefined,
+    mimeType: "image/jpeg"
+  };
+}
+
+function isVisionSupportedContentType(contentType: string) {
+  return ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(contentType.toLowerCase());
+}
+
+function replaceFileExtension(fileName: string, extension: string) {
+  const base = fileName.replace(/\.[^.]+$/, "") || "fitlog-photo";
+  return `${base}.${extension}`;
 }
 
 function extensionForContentType(contentType: string) {

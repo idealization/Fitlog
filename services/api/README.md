@@ -51,6 +51,17 @@ The local provider is selected by default. Unsupported values fail during app st
 FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic uvicorn app.main:app --app-dir services/api --reload
 ```
 
+Use actual image pixels through OpenAI vision:
+
+```bash
+export FITLOG_IMAGE_ANALYSIS_PROVIDER=openai
+export OPENAI_API_KEY=your-api-key
+export FITLOG_OPENAI_VISION_MODEL=gpt-5.4-mini
+uvicorn app.main:app --app-dir services/api --reload
+```
+
+Optional settings are documented in `.env.example`. OpenAI mode currently accepts JPEG, PNG, WebP, and GIF.
+
 ## Test
 
 ```bash
@@ -69,6 +80,7 @@ python -m unittest discover services/api/tests
 - Image analysis upload/job routes with in-memory repository
 - Local upload storage adapter and raw `PUT /closet-items/uploads/{uploadId}/object` completion endpoint
 - Image analysis provider contract with stored binary input and deterministic local implementation
+- OpenAI Responses API vision provider with strict structured output, timeout, retry, and failure handling
 - SQLAlchemy models and SQLite-backed repositories
 - Alembic initial migration
 - Recommendation route fallback to stored closet items
@@ -80,5 +92,5 @@ python -m unittest discover services/api/tests
 
 - authentication
 - cloud object storage adapter
-- real vision model and illustration provider integration
+- illustration provider integration
 - APNs/FCM push provider integration

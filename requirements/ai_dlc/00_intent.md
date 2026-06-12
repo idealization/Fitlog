@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U17 Image analysis provider adapter complete; next unit is U18 Real vision provider integration
+- Construction / Execute: U19 Mobile live vision readiness complete; next unit is U20 Device and live provider acceptance
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -47,7 +47,9 @@ flowchart TD
     U14 --> U15["U15: Upload readiness enforcement (complete)"]
     U15 --> U16["U16: Image quality retake guidance (complete)"]
     U16 --> U17["U17: Image analysis provider adapter (complete)"]
-    U17 --> U18["U18: Real vision provider integration"]
+    U17 --> U18["U18: Real vision provider integration (complete)"]
+    U18 --> U19["U19: Mobile live vision readiness (complete)"]
+    U19 --> U20["U20: Device and live provider acceptance"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -72,6 +74,8 @@ flowchart TD
 - Analysis jobs are created only after upload completion metadata is persisted and the stored image object exists.
 - Low-quality analysis results expose machine-readable reasons, require user review, and offer retake or explicit override actions.
 - The image worker reads stored image bytes and delegates analysis through an environment-selected provider contract.
+- OpenAI vision requests use stored image pixels, strict structured output validation, bounded retries, and persisted provider failure states.
+- Mobile image inputs normalize unsupported formats to JPEG and produce valid iOS and Android Expo bundles.
 
 ## Critical Human Decisions Still Open
 

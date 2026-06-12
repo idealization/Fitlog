@@ -37,7 +37,7 @@ export function HomeScreen({ onOpenRecommendation }: Props) {
     >
       <View style={styles.band}>
         <View style={styles.bandHeader}>
-          <Feather name="cloud-sun" size={22} color={colors.gold} />
+          <Feather name="cloud" size={22} color={colors.gold} />
           <Text style={styles.bandTitle}>오늘의 추천</Text>
         </View>
         <Text style={styles.bandBody}>오늘 입기 좋은 조합을 준비합니다.</Text>

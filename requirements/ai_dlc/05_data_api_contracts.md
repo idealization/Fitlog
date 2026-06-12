@@ -332,6 +332,8 @@ erDiagram
 
 이미지 품질이 충분하지 않으면 작업 상태는 `needs_user_review`가 되고 `quality.usable`은 `false`가 된다. `quality.issues`는 현재 `blur_detected`, `low_light`, `low_resolution` 코드를 사용할 수 있으며, 클라이언트는 이를 사용자용 재촬영 안내로 변환한다.
 
+OpenAI provider는 Responses API의 image input과 strict JSON Schema output을 사용한다. 허용되는 추가 품질 코드는 `item_occluded`, `multiple_items`, `not_clothing`, `poor_framing`이다. Provider 응답은 저장 전에 Fitlog 스키마로 다시 검증된다.
+
 ```json
 {
   "processed": true,

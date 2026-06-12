@@ -426,3 +426,80 @@
   - A real provider, credentials, response validation, timeout, and retry policy are deferred to U18.
 - Next:
   - U18 Real vision provider integration
+
+## U18. Real Vision Provider Integration
+
+- Status: complete
+- Scope:
+  - OpenAI Responses API vision provider using stored binary image data
+  - base64 data URL image input with high detail
+  - strict JSON Schema response contract and Pydantic validation
+  - configurable model, endpoint, timeout, and retry count
+  - transient network, rate-limit, and server error retries with exponential backoff
+  - provider failures persisted as failed image analysis jobs
+  - expanded mobile guidance for occlusion, multiple items, non-clothing, and poor framing
+- Backlog Link:
+  - E2-2: real image pixels produce clothing attributes
+  - E2-3: normalized analysis output remains editable before save
+  - E2-5: real vision quality issues produce retake guidance
+- Output:
+  - `services/api/app/services/image_analysis_provider.py`
+  - `services/api/app/core/config.py`
+  - `services/api/app/main.py`
+  - `services/api/tests/test_image_analysis_provider.py`
+  - `services/api/.env.example`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+- Configuration:
+  - `FITLOG_IMAGE_ANALYSIS_PROVIDER=openai`
+  - `OPENAI_API_KEY`
+  - `FITLOG_OPENAI_VISION_MODEL=gpt-5.4-mini`
+  - `FITLOG_IMAGE_ANALYSIS_TIMEOUT_SECONDS=30`
+  - `FITLOG_IMAGE_ANALYSIS_MAX_RETRIES=2`
+- Verification:
+  - request payload, encoded image, high detail, and strict schema assertions
+  - successful response normalization and malformed response rejection
+  - retry behavior and worker failure persistence tests
+  - full backend regression, Python compile, Alembic, and mobile configuration checks
+- Limitation:
+  - Live OpenAI API verification was not run because `OPENAI_API_KEY` is not configured in this environment.
+  - OpenAI mode currently accepts JPEG, PNG, WebP, and GIF; HEIC normalization is deferred to U19.
+- Next:
+  - U19 Mobile live vision readiness
+
+## U19. Mobile Live Vision Readiness
+
+- Status: complete
+- Scope:
+  - unsupported image formats, including HEIC/HEIF, normalized to JPEG before upload
+  - Expo ImageManipulator integration with cached normalized file output
+  - image normalization loading state blocks conflicting upload and save actions
+  - unnecessary camera microphone permission removed
+  - npm dependency installation and committed lockfile
+  - Expo SDK 52 dependency alignment and missing asset/font runtime dependencies restored
+  - existing invalid Feather icon corrected during first real TypeScript check
+- Backlog Link:
+  - E1-4: only required camera and photo permissions are requested
+  - E2-1: iPhone camera and gallery images reach a supported upload format
+  - E2-2: normalized images can enter either deterministic or OpenAI analysis
+- Output:
+  - `apps/mobile/package.json`
+  - `apps/mobile/package-lock.json`
+  - `apps/mobile/app.json`
+  - `apps/mobile/src/screens/ClosetScreen.tsx`
+  - `apps/mobile/src/screens/HomeScreen.tsx`
+  - mobile and project documentation
+- Verification:
+  - `npm run typecheck`
+  - Expo SDK dependency compatibility check
+  - public Expo config inspection with no microphone permission
+  - successful iOS Metro export
+  - successful Android Metro export
+  - backend regression tests and repository diff validation
+- Risk:
+  - `npm audit` reports 17 Expo SDK 52 transitive findings: 11 moderate and 6 high.
+  - Automated fixes require a major Expo SDK upgrade, so the dependency graph remains pinned for development and must be upgraded before beta distribution.
+- Limitation:
+  - No iOS simulator, Android emulator, or physical device is available in this environment.
+  - `OPENAI_API_KEY` is not configured, so a live paid-provider request was not executed.
+- Next:
+  - U20 Device and live provider acceptance
