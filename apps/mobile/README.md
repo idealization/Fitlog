@@ -13,7 +13,13 @@ npm run typecheck
 npm run start
 ```
 
-The dependency graph is pinned in `package-lock.json`. Expo SDK compatibility and both iOS and Android Metro exports were verified for U19.
+Open the browser build directly:
+
+```bash
+EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1 npm run web -- --port 8081
+```
+
+Then visit `http://127.0.0.1:8081`. The dependency graph is pinned in `package-lock.json`. Expo SDK compatibility and iOS, Android, and web exports are verified.
 
 Configure the backend URL:
 

@@ -5,6 +5,16 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 
 
+DEFAULT_CORS_ALLOWED_ORIGINS = (
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+)
+
+
+def _comma_separated_values(value: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in value.split(",") if item.strip())
+
+
 @dataclass(frozen=True)
 class Settings:
     service_name: str = "Fitlog"
@@ -20,6 +30,7 @@ class Settings:
     openai_base_url: str = "https://api.openai.com/v1"
     image_analysis_timeout_seconds: float = 30.0
     image_analysis_max_retries: int = 2
+    cors_allowed_origins: tuple[str, ...] = DEFAULT_CORS_ALLOWED_ORIGINS
 
 
 @lru_cache
@@ -38,4 +49,7 @@ def get_settings() -> Settings:
         openai_base_url=os.getenv("FITLOG_OPENAI_BASE_URL", "https://api.openai.com/v1"),
         image_analysis_timeout_seconds=float(os.getenv("FITLOG_IMAGE_ANALYSIS_TIMEOUT_SECONDS", "30")),
         image_analysis_max_retries=int(os.getenv("FITLOG_IMAGE_ANALYSIS_MAX_RETRIES", "2")),
+        cors_allowed_origins=_comma_separated_values(
+            os.getenv("FITLOG_CORS_ALLOWED_ORIGINS", ",".join(DEFAULT_CORS_ALLOWED_ORIGINS))
+        ),
     )

@@ -21,6 +21,18 @@ class ApiFoundationTests(unittest.TestCase):
         self.assertEqual(body["service"], "Fitlog")
         self.assertEqual(body["status"], "ok")
 
+    def test_local_web_origin_can_call_api(self):
+        response = self.client.options(
+            "/api/v1/health",
+            headers={
+                "Origin": "http://127.0.0.1:8081",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["access-control-allow-origin"], "http://127.0.0.1:8081")
+
     def test_demo_recommendations_return_candidates(self):
         response = self.client.get("/api/v1/recommendations/demo")
 
@@ -89,4 +101,3 @@ class ApiFoundationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

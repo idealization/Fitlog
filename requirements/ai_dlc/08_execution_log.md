@@ -503,3 +503,35 @@
   - `OPENAI_API_KEY` is not configured, so a live paid-provider request was not executed.
 - Next:
   - U20 Device and live provider acceptance
+
+## U20. Runnable Local App Acceptance
+
+- Status: complete
+- Scope:
+  - Expo Web runtime dependencies aligned with Expo SDK 52
+  - browser-to-FastAPI access enabled for local development origins
+  - local app and API startup on ports 8081 and 8000
+  - browser acceptance of recommendation, closet, feedback, and notification flows
+- Backlog Link:
+  - E3-1: registered closet items are visible in the digital closet
+  - E4-1/E4-3: a style request returns wardrobe-based outfit candidates
+  - E5-1: morning notification settings can be saved
+  - E6-1: recommendation feedback can be submitted
+- Output:
+  - `apps/mobile/package.json`
+  - `apps/mobile/package-lock.json`
+  - `services/api/app/core/config.py`
+  - `services/api/app/main.py`
+  - `services/api/tests/test_api_foundation.py`
+  - local run instructions in project documentation
+- Verification:
+  - Expo Web production export
+  - mobile TypeScript check and Expo dependency compatibility check
+  - local-origin CORS preflight regression test
+  - browser creation of a recommendation and closet item
+  - browser save/feedback and notification settings interactions
+- Limitation:
+  - Weather remains the documented fallback source in the local acceptance environment.
+  - Physical-device camera acceptance and a paid OpenAI request require a device and `OPENAI_API_KEY`; these move to U21.
+- Next:
+  - U21 Device and live provider acceptance

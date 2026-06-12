@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .api.v1.router import api_router
 from .core.config import Settings, get_settings
@@ -16,6 +17,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=resolved_settings.version,
         description="AI wardrobe and outfit recommendation API.",
     )
+    if resolved_settings.cors_allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(resolved_settings.cors_allowed_origins),
+            allow_credentials=False,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
     app.state.settings = resolved_settings
     repositories = build_repositories(resolved_settings)
     app.state.closet_repository = repositories["closet_repository"]
