@@ -536,7 +536,7 @@
 - Next:
   - U21 Device and live provider acceptance
 
-## U21. Device and Live Provider Acceptance
+## U21. Free Device Demo Acceptance
 
 - Status: in progress
 - Completed Scope:
@@ -545,6 +545,8 @@
   - legacy Expo FileSystem upload adapter retained through the SDK 56 compatibility import
   - safe runtime-readiness API for provider, model, environment, and repository mode
   - in-app service status panel showing API and real-versus-demo analysis mode
+  - explicit free-demo copy explaining that draft attributes come from user-entered metadata, not image pixels
+  - `demo` provider default with backwards-compatible `deterministic` alias
   - generated white Oxford shirt acceptance fixture
   - automated upload, storage, analysis-job, worker, and result verification
   - LAN launcher for Expo Go with a device-reachable API base URL
@@ -553,16 +555,16 @@
   - mobile TypeScript check
   - Expo SDK dependency compatibility check
   - successful web, iOS, and Android SDK 56 exports
-  - real PNG upload pipeline succeeded with `fitlog_deterministic`
+  - real PNG upload pipeline succeeded with `fitlog_demo`
   - desktop browser service-status acceptance
 - Current Gate Result:
   - API: pass
   - photo pipeline: pass
-  - live OpenAI provider: blocked because `OPENAI_API_KEY` is not configured
   - iOS/Android device: blocked because no simulator, emulator, or connected device is available
+  - paid OpenAI provider: optional and no longer an MVP or U21 completion gate
   - dependency audit: 10 moderate transitive findings remain after the SDK 56 upgrade
 - Completion Command:
-  - `.venv/bin/python scripts/verify_u21.py --require-device --require-live-provider`
+  - `.venv/bin/python scripts/verify_u21.py --require-device --device-confirmed`
 - Remaining:
   - connect an iOS or Android device through Expo Go and complete one camera capture
-  - configure `OPENAI_API_KEY`, restart with `FITLOG_IMAGE_ANALYSIS_PROVIDER=openai`, and rerun the completion command
+  - save the metadata-based demo draft to the closet and run the completion command

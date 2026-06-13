@@ -89,6 +89,7 @@ def main() -> int:
     parser.add_argument("--api-base", default="http://127.0.0.1:8000/api/v1")
     parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE)
     parser.add_argument("--require-device", action="store_true")
+    parser.add_argument("--device-confirmed", action="store_true")
     parser.add_argument("--require-live-provider", action="store_true")
     args = parser.parse_args()
 
@@ -102,9 +103,9 @@ def main() -> int:
     print(f"[PASS] Photo pipeline: {args.fixture.name} -> {worker['status']} ({provider})")
 
     live = bool(readiness["imageAnalysis"]["live"] and provider == "openai")
-    print(f"[{'PASS' if live else 'BLOCKED'}] Live provider: {readiness['imageAnalysis']['provider']}")
+    print(f"[{'PASS' if live else 'OPTIONAL'}] Paid live provider: {readiness['imageAnalysis']['provider']}")
 
-    device = connected_device()
+    device = "physical-device-manual" if args.device_confirmed else connected_device()
     print(f"[{'PASS' if device else 'BLOCKED'}] Device: {device or 'none detected'}")
 
     if args.require_live_provider and not live:

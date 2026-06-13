@@ -117,6 +117,11 @@ class ImageAnalysisProviderTests(unittest.TestCase):
 
         self.assertIsInstance(provider, DeterministicImageAnalysisProvider)
 
+    def test_factory_builds_demo_provider(self):
+        provider = build_image_analysis_provider("demo")
+
+        self.assertIsInstance(provider, DeterministicImageAnalysisProvider)
+
     def test_app_rejects_unknown_provider_configuration(self):
         with self.assertRaisesRegex(ValueError, "Unsupported image analysis provider"):
             create_app(Settings(image_analysis_provider="unknown"))

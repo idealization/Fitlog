@@ -33,7 +33,7 @@ This repository currently contains:
 ## AI-DLC Progress
 
 - Inception / Elaborate: complete for MVP baseline
-- Construction / Execute: U20 runnable local app acceptance complete; U21 device and live provider acceptance is next
+- Construction / Execute: U21 free device demo acceptance is in progress
 - Delivery / Check: unit and API tests added
 - Operations: not started
 
@@ -63,13 +63,13 @@ Change the local upload storage root if needed:
 FITLOG_UPLOAD_STORAGE_ROOT=.fitlog/storage uvicorn app.main:app --app-dir services/api --reload
 ```
 
-Select the local image analysis provider explicitly if needed:
+The default free demo mode needs no API key. It stores the photo and builds an editable draft from the name, category, and color entered in the app:
 
 ```bash
-FITLOG_IMAGE_ANALYSIS_PROVIDER=deterministic uvicorn app.main:app --app-dir services/api --reload
+FITLOG_IMAGE_ANALYSIS_PROVIDER=demo uvicorn app.main:app --app-dir services/api --reload
 ```
 
-Run with real OpenAI vision analysis:
+Optional paid pixel-level OpenAI analysis can be enabled later:
 
 ```bash
 export FITLOG_IMAGE_ANALYSIS_PROVIDER=openai
@@ -110,7 +110,11 @@ Run the U21 image-pipeline and readiness check while the API is running:
 .venv/bin/python scripts/verify_u21.py
 ```
 
-Add `--require-device --require-live-provider` for the final U21 gate.
+After completing the camera flow on a physical phone, run the final free U21 gate:
+
+```bash
+.venv/bin/python scripts/verify_u21.py --require-device --device-confirmed
+```
 
 ## Local Verification
 
@@ -122,17 +126,18 @@ python3 -m unittest discover services/api/tests
 
 ## Next Unit
 
-U21 is device and live provider acceptance:
+U21 is free device demo acceptance:
 
 - run the camera flow on an iOS or Android device
-- execute one real OpenAI analysis with a configured API key
 - verify capture, normalization, upload, review, and closet save as one acceptance flow
+- keep paid OpenAI pixel recognition as an optional later quality experiment
 
 ## When You Can Try It
 
-- Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Deterministic mode works without credentials.
-- Now with an API key: select the `openai` provider to analyze actual JPEG, PNG, WebP, or GIF image pixels.
+- Now: run the backend and inspect the complete API flow at `http://127.0.0.1:8000/docs`. Demo mode works without credentials or payment.
+- Demo limitation: the photo is uploaded and stored, but clothing attributes come from the name, category, and color entered by the user rather than image pixels.
+- Optional later: select the `openai` provider only when pixel-level automatic recognition is worth paying to evaluate.
 - Now: use the running Fitlog web MVP at `http://127.0.0.1:8081`; recommendation, closet registration, feedback, and notification settings are connected to the local API.
 - Now: mobile dependencies are aligned to Expo SDK 56, TypeScript passes, and iOS, Android, and web bundles build.
-- After U21: the camera-to-closet path becomes the first fully verified hands-on mobile milestone with a live provider request.
+- After U21: the free camera-to-closet demo path becomes the first fully verified hands-on mobile milestone.
 - Public beta still needs authentication, cloud storage, live weather, push delivery, deployment, and privacy hardening.

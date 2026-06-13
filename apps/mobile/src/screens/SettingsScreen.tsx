@@ -101,8 +101,11 @@ export function SettingsScreen() {
           <Text style={styles.title}>서비스 상태</Text>
         </View>
         <StatusRow label="API" value={readiness?.apiStatus === "ok" ? "연결됨" : "확인 중"} />
-        <StatusRow label="분석 모드" value={readiness?.imageAnalysis.live ? "OpenAI 실분석" : "로컬 데모"} />
-        <StatusRow label="분석 모델" value={readiness?.imageAnalysis.model ?? "-"} />
+        <StatusRow label="분석 모드" value={readiness?.imageAnalysis.live ? "OpenAI 실분석" : "무료 데모"} />
+        <StatusRow
+          label="분석 방식"
+          value={readiness?.imageAnalysis.live ? readiness.imageAnalysis.model : "입력값 기반 초안"}
+        />
         <StatusRow label="데이터" value={readiness?.repositoryBackend ?? "-"} />
         <Text style={styles.endpoint} numberOfLines={2}>{API_BASE_URL}</Text>
         <ActionButton label="연결 다시 확인" icon="refresh-cw" onPress={load} loading={loading} tone="secondary" />

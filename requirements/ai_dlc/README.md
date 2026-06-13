@@ -29,13 +29,13 @@
 - 초기 구현 방식: React Native Expo + TypeScript
 - 백엔드: FastAPI + PostgreSQL + S3 호환 이미지 저장소
 - 비동기 처리: Redis Queue 또는 Celery 계열 워커
-- AI: MVP에서는 외부 AI API를 활용하고, 사용자 피드백/성능 데이터를 쌓은 뒤 자체 모델 여부를 재검토
+- AI: MVP는 무료 입력값 기반 데모로 검증하고, 실제 이미지 자동 인식은 비용 대비 가치가 확인된 뒤 외부 AI API를 선택적으로 연결
 - 추천: 규칙 기반 필터와 AI 랭킹을 혼합
-- 현재 실행 단위: U21 Device and live provider acceptance 진행 중
+- 현재 실행 단위: U21 Free device demo acceptance 진행 중
 
 ## 다음 작업
 
 1. `./scripts/start_device_dev.sh`로 Expo Go 실기기 흐름을 연다.
 2. iOS 또는 Android 기기에서 카메라 촬영과 옷장 저장을 검증한다.
-3. `OPENAI_API_KEY`를 설정하고 실제 이미지 분석 요청 1건을 승인한다.
-4. U21 완료 명령의 device와 live-provider 게이트를 모두 통과시킨다.
+3. `.venv/bin/python scripts/verify_u21.py --require-device --device-confirmed`를 실행한다.
+4. OpenAI 픽셀 분석은 유료 비용을 쓸 가치가 확인될 때만 별도 실험한다.

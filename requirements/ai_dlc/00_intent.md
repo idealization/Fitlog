@@ -21,7 +21,7 @@ This project does not currently include an installed AI-DLC plugin or project-sp
 ## Current State
 
 - Inception / Elaborate: complete for the MVP baseline
-- Construction / Execute: U21 Device and live provider acceptance in progress; local photo pipeline accepted, device and live provider pending
+- Construction / Execute: U21 Free device demo acceptance in progress; local photo pipeline accepted, physical camera flow pending
 - Delivery / Check: active through unit tests, API tests, and quality checklist
 - Operations: not started
 
@@ -50,7 +50,7 @@ flowchart TD
     U17 --> U18["U18: Real vision provider integration (complete)"]
     U18 --> U19["U19: Mobile live vision readiness (complete)"]
     U19 --> U20["U20: Runnable local app acceptance (complete)"]
-    U20 --> U21["U21: Device and live provider acceptance"]
+    U20 --> U21["U21: Free device demo acceptance"]
 ```
 
 ## Machine-Checkable Success Criteria
@@ -79,7 +79,7 @@ flowchart TD
 - Mobile image inputs normalize unsupported formats to JPEG and produce valid iOS and Android Expo bundles.
 - Expo Web runs against the local FastAPI service and supports recommendation, closet, and notification-setting acceptance flows.
 - Runtime readiness reports the active analysis provider without exposing credentials.
-- The U21 acceptance command exercises a real PNG upload through analysis and detects connected device and live-provider readiness.
+- The U21 acceptance command exercises a real PNG upload through the free demo draft pipeline and accepts manual physical-device confirmation.
 
 ## Critical Human Decisions Still Open
 

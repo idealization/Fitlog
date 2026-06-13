@@ -342,8 +342,8 @@ OpenAI provider는 Responses API의 image input과 strict JSON Schema output을 
   "status": "succeeded",
   "progress": 100,
   "result": {
-    "provider": "fitlog_deterministic",
-    "modelVersion": "deterministic-image-analysis-v1",
+    "provider": "fitlog_demo",
+    "modelVersion": "demo-metadata-draft-v1",
     "quality": {
       "usable": true,
       "score": 0.92,

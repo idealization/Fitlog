@@ -278,7 +278,7 @@ def _extract_response_output_text(response: dict[str, object]) -> str:
 
 
 class DeterministicImageAnalysisProvider:
-    name = "deterministic"
+    name = "demo"
 
     def analyze(self, job: ImageAnalysisJob, image_bytes: bytes) -> dict[str, object]:
         if not image_bytes:
@@ -296,7 +296,7 @@ def build_image_analysis_provider(
     max_retries: int = 2,
 ) -> ImageAnalysisProvider:
     normalized_name = provider_name.strip().lower()
-    if normalized_name == DeterministicImageAnalysisProvider.name:
+    if normalized_name in {DeterministicImageAnalysisProvider.name, "deterministic"}:
         return DeterministicImageAnalysisProvider()
     if normalized_name == OpenAIImageAnalysisProvider.name:
         return OpenAIImageAnalysisProvider(
@@ -336,8 +336,8 @@ def build_deterministic_analysis_result(job: ImageAnalysisJob) -> dict[str, obje
     }
 
     return {
-        "provider": "fitlog_deterministic",
-        "modelVersion": "deterministic-image-analysis-v1",
+        "provider": "fitlog_demo",
+        "modelVersion": "demo-metadata-draft-v1",
         "source": {
             "jobId": job.id,
             "uploadId": job.upload_id,
@@ -366,12 +366,12 @@ def build_deterministic_analysis_result(job: ImageAnalysisJob) -> dict[str, obje
             "background": "transparent",
         },
         "confidence": {
-            "category": 0.74,
-            "colors": 0.68,
-            "styleTags": 0.61,
+            "category": 1.0,
+            "colors": 1.0,
+            "styleTags": 0.5,
             "illustration": 0.0,
         },
-        "events": ["closet_item.analyzed", "closet_item.illustration.placeholder_created"],
+        "events": ["closet_item.demo_draft_created", "closet_item.illustration.placeholder_created"],
     }
 
 

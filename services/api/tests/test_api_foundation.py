@@ -39,7 +39,7 @@ class ApiFoundationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertEqual(body["apiStatus"], "ok")
-        self.assertEqual(body["imageAnalysis"]["provider"], "deterministic")
+        self.assertEqual(body["imageAnalysis"]["provider"], "demo")
         self.assertTrue(body["imageAnalysis"]["configured"])
         self.assertFalse(body["imageAnalysis"]["live"])
         self.assertNotIn("apiKey", body["imageAnalysis"])

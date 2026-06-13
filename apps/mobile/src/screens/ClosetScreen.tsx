@@ -14,6 +14,7 @@ import type {
   Formality,
   ImageAnalysisResult,
   ItemStatus,
+  RuntimeReadiness,
   Season,
   Thickness,
   WorkerRunResponse
@@ -25,6 +26,7 @@ import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 
 type DraftFormState = {
+  demo: boolean;
   jobId: string;
   illustrationStorageKey: string;
   qualityUsable: boolean;
@@ -53,6 +55,7 @@ const formalityOptions: Formality[] = ["casual", "business_casual", "formal"];
 
 export function ClosetScreen() {
   const [items, setItems] = useState<ClosetItem[]>([]);
+  const [readiness, setReadiness] = useState<RuntimeReadiness | null>(null);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -74,7 +77,12 @@ export function ClosetScreen() {
     setLoading(true);
     setError(null);
     try {
-      setItems(await fitlogApi.listClosetItems());
+      const [closetItems, runtimeReadiness] = await Promise.all([
+        fitlogApi.listClosetItems(),
+        fitlogApi.runtimeReadiness()
+      ]);
+      setItems(closetItems);
+      setReadiness(runtimeReadiness);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Closet request failed");
     } finally {
@@ -154,8 +162,10 @@ export function ClosetScreen() {
       setAnalysisJob(completedJob);
       setDraft(toDraftFormState(processed.result, newItemName, newItemCategory, newItemColor));
       setNotice(
-        processed.result.quality.usable
-          ? "분석 초안을 만들었어요. 확인 후 저장하세요."
+        processed.result.provider === "fitlog_demo"
+          ? "입력한 정보로 무료 데모 초안을 만들었어요. 확인 후 저장하세요."
+          : processed.result.quality.usable
+          ? "자동 분석 초안을 만들었어요. 확인 후 저장하세요."
           : "사진 품질을 확인해주세요. 재촬영하거나 검토 후 저장할 수 있어요."
       );
     } catch (caught) {
@@ -232,8 +242,8 @@ export function ClosetScreen() {
       setDraft(null);
       setNotice(
         source === "camera"
-          ? "사진을 촬영했어요. AI 분석을 시작하세요."
-          : "사진을 선택했어요. AI 분석을 시작하세요."
+          ? "사진을 촬영했어요. 데모 초안을 만들어보세요."
+          : "사진을 선택했어요. 데모 초안을 만들어보세요."
       );
     } finally {
       setNormalizingImage(false);
@@ -244,7 +254,7 @@ export function ClosetScreen() {
     if (!draft) {
       return;
     }
-    if (!draft.qualityUsable && !allowLowQuality) {
+    if (!draft.demo && !draft.qualityUsable && !allowLowQuality) {
       setError("품질이 낮은 사진이에요. 재촬영하거나 '그래도 저장'을 선택해주세요.");
       return;
     }
@@ -290,6 +300,14 @@ export function ClosetScreen() {
 
           <View style={styles.creationPanel}>
             <Text style={styles.panelTitle}>빠른 등록</Text>
+            {!readiness?.imageAnalysis.live ? (
+              <View style={styles.demoNotice}>
+                <Feather name="info" size={18} color={colors.green} />
+                <Text style={styles.demoNoticeText}>
+                  무료 데모는 사진을 보관하고, 아래에 입력한 이름·종류·색상으로 수정 가능한 초안을 만듭니다.
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.fieldRow}>
               <TextInput
                 value={newItemName}
@@ -351,7 +369,7 @@ export function ClosetScreen() {
               />
             </View>
             <ActionButton
-              label="AI 분석"
+              label={readiness?.imageAnalysis.live ? "AI 자동 분석" : "무료 데모 초안"}
               icon="upload"
               onPress={startAnalysisJob}
               loading={analyzing}
@@ -379,14 +397,16 @@ export function ClosetScreen() {
             <View style={styles.reviewPanel}>
               <View style={styles.reviewHeader}>
                 <View>
-                  <Text style={styles.panelTitle}>AI 분석 검토</Text>
+                  <Text style={styles.panelTitle}>{draft.demo ? "데모 초안 검토" : "AI 분석 검토"}</Text>
                   <Text style={styles.helperText}>
-                    품질 {Math.round(draft.qualityScore * 100)}% / {draft.qualityUsable ? "사용 가능" : "재촬영 권장"}
+                    {draft.demo
+                      ? "입력값 기반 / 저장 전 자유롭게 수정 가능"
+                      : `품질 ${Math.round(draft.qualityScore * 100)}% / ${draft.qualityUsable ? "사용 가능" : "재촬영 권장"}`}
                   </Text>
                 </View>
                 <Feather name="edit-3" size={20} color={colors.ink} />
               </View>
-              {!draft.qualityUsable ? (
+              {!draft.demo && !draft.qualityUsable ? (
                 <View style={styles.qualityWarning}>
                   <Feather name="alert-triangle" size={20} color={colors.danger} />
                   <View style={styles.qualityWarningBody}>
@@ -507,7 +527,7 @@ export function ClosetScreen() {
                   rain
                 </Text>
               </View>
-              {!draft.qualityUsable ? (
+              {!draft.demo && !draft.qualityUsable ? (
                 <>
                   <View style={styles.actionRow}>
                     <ActionButton
@@ -599,8 +619,12 @@ function toDraftFormState(
   fallbackCategory: Category,
   fallbackColor: string
 ): DraftFormState {
-  const draft = result.closetItemDraft ?? fallbackDraft(fallbackName, fallbackCategory, fallbackColor);
+  const demo = result.provider === "fitlog_demo";
+  const draft = demo
+    ? fallbackDraft(fallbackName, fallbackCategory, fallbackColor)
+    : result.closetItemDraft ?? fallbackDraft(fallbackName, fallbackCategory, fallbackColor);
   return {
+    demo,
     jobId: result.source.jobId,
     illustrationStorageKey: result.illustration.storageKey,
     qualityUsable: result.quality.usable,
@@ -857,6 +881,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: spacing.md,
     gap: spacing.sm
+  },
+  demoNotice: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 8,
+    padding: spacing.md
+  },
+  demoNoticeText: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 19
   },
   selectedImagePanel: {
     minHeight: 104,

@@ -2,7 +2,7 @@
 
 React Native Expo app foundation for Fitlog.
 
-The closet screen supports gallery selection and camera capture, normalizes unsupported inputs such as HEIC to JPEG, uploads the image, runs analysis, and saves an editable draft. Camera permission denial leaves the gallery flow available. Low-quality results explain the detected issue and offer retake, alternate photo, or explicit save-override actions.
+The closet screen supports gallery selection and camera capture, normalizes unsupported inputs such as HEIC to JPEG, uploads the image, and saves an editable draft. The default free demo builds that draft from the name, category, and color entered by the user; it does not claim to inspect image pixels. A paid vision provider can be connected later without changing the flow.
 
 ## Setup
 

@@ -59,8 +59,8 @@ class ImageAnalysisWorkerApiTests(unittest.TestCase):
         self.assertEqual(body["progress"], 100)
 
         result = body["result"]
-        self.assertEqual(result["provider"], "fitlog_deterministic")
-        self.assertEqual(result["modelVersion"], "deterministic-image-analysis-v1")
+        self.assertEqual(result["provider"], "fitlog_demo")
+        self.assertEqual(result["modelVersion"], "demo-metadata-draft-v1")
         self.assertEqual(result["quality"]["usable"], True)
         self.assertEqual(result["detectedAttributes"]["category"], "top")
         self.assertEqual(result["detectedAttributes"]["subType"], "shirt")
